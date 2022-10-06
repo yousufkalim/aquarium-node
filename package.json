@@ -1,5 +1,5 @@
 {
-  "name": "Node-JS",
+  "name": "aquarium-node",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,14 +9,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/falconitconsultant/Node-JS.git"
+    "url": "git+https://github.com/falconitconsultant/aquarium-node.git"
   },
   "author": "Yousuf Kalim",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/falconitconsultant/Node-JS/issues"
+    "url": "https://github.com/falconitconsultant/aquarium-node/issues"
   },
-  "homepage": "https://github.com/falconitconsultant/Node-JS#readme",
+  "homepage": "https://github.com/falconitconsultant/aquarium-node#readme",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",

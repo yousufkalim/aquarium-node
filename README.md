@@ -1,4 +1,5 @@
-# Node-JS Boilerplate
+# Aquarium Pro Service
+
 
 Installation steps to run server locally
 

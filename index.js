@@ -1,5 +1,5 @@
 /**
- * Node-JS Boilerplate
+ * Aquarium Pro Service
  * @author Yousuf Kalim
  */
 require('dotenv').config();
