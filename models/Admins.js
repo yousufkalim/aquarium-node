@@ -22,12 +22,14 @@ const adminSchema = new Schema(
     role: {
       type: String,
       default: 'admin',
-      enum: ['admin', 'superadmin'],
+      enum: ['admin', 'super_admin'],
     },
     active: {
       type: Boolean,
       default: true,
     },
+    phone_number: String,
+    profile_pic: String,
   },
   {
     timestamps: true,
