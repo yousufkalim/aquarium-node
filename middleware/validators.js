@@ -23,6 +23,26 @@ exports.validateUser = [
   check('city').trim(),
   check('country').trim(),
 ];
+exports.validateAdmin = [
+  check('name', 'Name is required.').notEmpty().trim(),
+  check('email')
+    .notEmpty()
+    .withMessage('Email is required.')
+    .isEmail()
+    .withMessage('Invalid email.')
+    .trim(),
+  check('password')
+    .notEmpty()
+    .withMessage('Password is required.')
+    .isLength({ min: 8 })
+    .withMessage('Password must be 8 characters long'),
+  check('confirmPassword')
+    .notEmpty()
+    .withMessage('Confirm password is required.')
+    .trim()
+    .isLength({ min: 8 })
+    .withMessage('Confirm password must be 8 characters long'),
+];
 
 // User Signup Validation
 exports.validateUserUpdate = [
@@ -38,8 +58,14 @@ exports.validateUserUpdate = [
 
 // Login validation
 exports.validateLogin = [
-  check('email', 'Email is required').notEmpty().isEmail().trim().toLowerCase(),
-  check('password', 'Password is required.').notEmpty().trim().isLength({ min: 8 }),
+  check('email')
+    .notEmpty()
+    .withMessage('Email is required')
+    .isEmail()
+    .withMessage('Invalid Email')
+    .trim()
+    .toLowerCase(),
+  check('password', 'Password is required.').notEmpty(),
 ];
 
 // Change password validation

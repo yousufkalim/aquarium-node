@@ -7,38 +7,36 @@ const mongoose = require('mongoose');
 // Schema
 const userSchema = new mongoose.Schema(
   {
-    name: {
+    first_name: {
       type: String,
       required: true,
     },
-    email: {
+    last_name: {
+      type: String,
+      required: true,
+    },
+    phone_number: {
       type: String,
       required: true,
       unique: true,
-      lowercase: true,
-    },
-    password: {
-      type: String,
-      required: true,
-      minlength: 8,
-    },
-    number: {
-      type: String,
-      required: true,
-    },
-    gender: {
-      type: String,
-      enum: ['male', 'female'],
     },
     role: {
       type: String,
       enum: ['user'],
       default: 'user',
     },
-    address: String,
-    city: String,
-    country: String,
-    photo: String,
+    current_status: {
+      type: String,
+      enum: ['clocked_in', 'clocked_out'],
+      default: 'clocked_out',
+    },
+    admin: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'admins',
+      required: true,
+    },
+    otp: String,
+    profile_pic: String,
   },
   {
     timestamps: true,
