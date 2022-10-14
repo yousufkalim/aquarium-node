@@ -115,7 +115,11 @@ exports.forgot = async (req, res) => {
     let randomPassword = Math.random().toString(36).slice(-8);
 
     // Sending email to user
-    sendEmail(email, randomPassword)
+    sendEmail({
+      email,
+      subject: 'Your password has been changed',
+      body: randomPassword,
+    })
       .then(async () => {
         // If email is sent then we have to update the password in db
         user.password = await bcrypt.hash(randomPassword, parseInt(bcryptSalt));
