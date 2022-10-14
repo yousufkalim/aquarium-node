@@ -13,15 +13,18 @@ Validations
 // You can create multiple validations strategies (Read express-validator documentation for more details)
 // User Signup Validation
 exports.validateUser = [
-  check('name', 'Name is required.').notEmpty().trim(),
-  check('email', 'Email is required.').notEmpty().isEmail().trim(),
-  check('password', 'Password is required.').notEmpty().trim().isLength({ min: 8 }),
-  check('number', 'Number is required.').notEmpty().isNumeric().trim(),
-  check('gender').trim(),
-  check('role').trim(),
-  check('address').trim(),
-  check('city').trim(),
-  check('country').trim(),
+  check('first_name', 'First name is required.').notEmpty().trim(),
+  check('last_name', 'Last name is required.').notEmpty().trim(),
+  check('phone_number')
+    .notEmpty()
+    .withMessage('Phone number is required.')
+    .custom((value) => {
+      let result = /^\([0-9]{3}\)\s*[0-9]{3}-[0-9]{4}$/.test(value);
+      if (!result) {
+        throw new Error('Phone number can only by in "(XXX) XXX-XXXX" format.');
+      }
+      return true;
+    }),
 ];
 exports.validateAdmin = [
   check('name', 'Name is required.').notEmpty().trim(),
@@ -44,18 +47,6 @@ exports.validateAdmin = [
     .withMessage('Confirm password must be 8 characters long'),
 ];
 
-// User Signup Validation
-exports.validateUserUpdate = [
-  check('name', 'Name is required.').notEmpty().trim(),
-  check('email', 'Email is required.').notEmpty().isEmail().trim(),
-  check('number', 'Number is required.').notEmpty().isNumeric().trim(),
-  check('gender').trim(),
-  check('role').trim(),
-  check('address').trim(),
-  check('city').trim(),
-  check('country').trim(),
-];
-
 // Login validation
 exports.validateLogin = [
   check('email')
@@ -70,9 +61,40 @@ exports.validateLogin = [
 
 // Change password validation
 exports.changePasswordValidate = [
-  check('oldPassword', 'Old Password is required.').notEmpty().trim().isLength({ min: 8 }),
-  check('newPassword', 'New password is required.').notEmpty().trim().isLength({ min: 8 }),
-  check('confirmPassword', 'Confirm password is required.').notEmpty().trim().isLength({ min: 8 }),
+  check('oldPassword')
+    .notEmpty()
+    .withMessage('Password is required.')
+    .trim()
+    .isLength({ min: 8 })
+    .withMessage('Password must be 8 characters long'),
+  check('newPassword')
+    .notEmpty()
+    .withMessage('New password is required.')
+    .trim()
+    .isLength({ min: 8 })
+    .withMessage('Confirm password must be 8 characters long'),
+  check('confirmPassword')
+    .notEmpty()
+    .withMessage('Confirm password is required.')
+    .trim()
+    .isLength({ min: 8 })
+    .withMessage('Confirm password must be 8 characters long'),
+];
+
+// Password validation
+exports.newPasswordValidate = [
+  check('password')
+    .notEmpty()
+    .withMessage('Password is required.')
+    .trim()
+    .isLength({ min: 8 })
+    .withMessage('Password must be 8 characters long'),
+  check('confirmPassword')
+    .notEmpty()
+    .withMessage('Confirm password is required.')
+    .trim()
+    .isLength({ min: 8 })
+    .withMessage('Confirm password must be 8 characters long'),
 ];
 
 /*

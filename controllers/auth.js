@@ -3,11 +3,14 @@
  * @author Yousuf Kalim
  */
 const Users = require('../models/Users');
+const Admins = require('../models/Admins');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { sendEmail } = require('../utils/sendEmail');
+const moment = require('moment');
 const bcryptSalt = process.env.BCRYPT_SALT || 10;
 const tokenSecret = process.env.JWT_SECRET;
+const origin = process.env.ORIGIN;
 
 /**
  * Login
@@ -61,7 +64,7 @@ exports.login = async (req, res) => {
  */
 exports.changePassword = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { _id } = req.user;
     const { oldPassword, newPassword, confirmPassword } = req.body;
 
     if (newPassword !== confirmPassword) {
@@ -71,16 +74,24 @@ exports.changePassword = async (req, res) => {
       });
     }
 
-    let user = await Users.findById(userId);
+    let user = await Admins.findById(_id);
 
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const isMatched = bcrypt.compareSync(oldPassword, user.password);
+    let isMatched = bcrypt.compareSync(oldPassword, user.password);
 
     if (!isMatched) {
       return res.status(400).json({ success: false, message: 'Invalid old Password' });
+    }
+
+    isMatched = bcrypt.compareSync(newPassword, user.password);
+
+    if (isMatched) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'New Password cannot be same as old Password' });
     }
 
     // Generate token
@@ -88,7 +99,7 @@ exports.changePassword = async (req, res) => {
 
     await user.save();
 
-    res.json({ success: true, user });
+    res.json({ success: true, user, message: 'Password updated successfully.' });
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console
@@ -98,31 +109,32 @@ exports.changePassword = async (req, res) => {
 };
 
 /**
- * Forgot password
+ * Forgot password - Send link
  * @param {object} req
  * @param {object} res
  */
 exports.forgot = async (req, res) => {
   try {
     let { email } = req.params;
-    let user = await Users.findOne({ email });
+    let user = await Admins.findOne({ email });
 
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
     // Generating random password
-    let randomPassword = Math.random().toString(36).slice(-8);
+    let random = Math.random().toString(36).slice(-10);
 
     // Sending email to user
     sendEmail({
       email,
-      subject: 'Your password has been changed',
-      body: randomPassword,
+      subject: 'Visit this link to reset your password.',
+      body: `${origin}/password/?token=${random}_${user._id}&email=true`,
     })
       .then(async () => {
         // If email is sent then we have to update the password in db
-        user.password = await bcrypt.hash(randomPassword, parseInt(bcryptSalt));
+        user.token = random;
+        user.token_expires_in = moment().add(1, 'week').endOf('day');
         await user.save();
 
         // Done
@@ -134,6 +146,70 @@ exports.forgot = async (req, res) => {
         console.log('Error ----> ', err);
         res.status(500).json({ success: false, message: 'Internal server error' });
       });
+  } catch (err) {
+    // Error handling
+    // eslint-disable-next-line no-console
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+/**
+ * Verify Change Password token
+ * @param {object} req
+ * @param {object} res
+ */
+exports.verifyToken = async (req, res) => {
+  try {
+    let { urlToken } = req.params;
+
+    let [token, id] = urlToken.split('_');
+
+    let user = await Admins.findById(id);
+
+    if (!user || user?.token !== token) {
+      return res.status(401).json({ success: false, message: 'Invalid token.' });
+    }
+
+    if (moment(user.token_expires_in).isSameOrBefore(moment())) {
+      return res.status(401).json({ success: false, message: 'Token expired.' });
+    }
+
+    res.json({ success: true, token, user });
+  } catch (err) {
+    // Error handling
+    // eslint-disable-next-line no-console
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+/**
+ * Verify Change Password token
+ * @param {object} req
+ * @param {object} res
+ */
+exports.createPassword = async (req, res) => {
+  try {
+    let { userId } = req.params;
+    let { password, confirmPassword } = req.body;
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password and confirm password are not same',
+      });
+    }
+
+    let user = await Admins.findById(userId);
+
+    // Generate token
+    user.password = bcrypt.hashSync(password, parseInt(bcryptSalt));
+    user.token = null;
+    user.token_expires_in = null;
+    await user.save();
+
+    res.json({ success: true, message: 'Password created.' });
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console

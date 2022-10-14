@@ -3,8 +3,6 @@
  * @author Yousuf Kalim
  */
 const Users = require('../models/Users');
-const bcrypt = require('bcryptjs');
-const bcryptSalt = process.env.BCRYPT_SALT || 10;
 
 /**
  * Create User - Signup
@@ -13,8 +11,11 @@ const bcryptSalt = process.env.BCRYPT_SALT || 10;
  */
 exports.create = async (req, res) => {
   try {
-    let { email, password } = req.body; // Getting required fields from body
-    const existingUser = await Users.findOne({ email }); // Finding already existing user
+    let admin = req.user;
+    let phoneNumber = req.body.phone_number; // Getting required fields from body
+
+    req.body.phone_number = phoneNumber.replaceAll(' ', '');
+    const existingUser = await Users.findOne({ phone_number: req.body.phone_number }); // Finding already existing user
 
     // Extra Validations
     if (existingUser) {
@@ -22,17 +23,14 @@ exports.create = async (req, res) => {
       return res.status(409).json({ success: false, message: 'User already exists.' });
     }
 
-    // Getting url of the image
-    if (req.file) {
-      req.body.photo = req.file.path; // Creating a new property called photo in body object
-    }
-
-    // Creating User
-    req.body.password = bcrypt.hashSync(password, parseInt(bcryptSalt)); // Hashing the password with salt 8
-    const user = await Users.create(req.body); // Adding user in db
+    const user = await Users.create({ ...req.body, admin: admin._id }); // Adding user in db
 
     // Done
-    res.json({ success: true, user }); //Success
+    res.json({
+      success: true,
+      user,
+      message: 'Technician added.',
+    }); //Success
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console
@@ -48,7 +46,8 @@ exports.create = async (req, res) => {
  */
 exports.getAll = async (req, res) => {
   try {
-    const users = await Users.find(); // Finding all the users from db
+    let admin = req.user;
+    const users = await Users.find({ admin: admin._id }); // Finding all the users from db
     res.json({ success: true, users }); // Success
   } catch (err) {
     // Error handling
@@ -65,7 +64,7 @@ exports.getAll = async (req, res) => {
  */
 exports.getById = async (req, res) => {
   try {
-    const userId = req.params.userId; // Getting user id from URL parameter
+    const { userId } = req.params; // Getting user id from URL parameter
     const user = await Users.findById(userId); // Finding user by id
     res.json({ success: true, user }); // Success
   } catch (err) {
@@ -83,14 +82,30 @@ exports.getById = async (req, res) => {
  */
 exports.update = async (req, res) => {
   try {
-    const userId = req.params.userId; // Getting user id from URL parameter
+    const { userId } = req.params; // Getting user id from URL parameter
 
-    // If user want to update it's password
-    if (req.body.password) {
-      req.body.password = bcrypt.hashSync(req.body.password, parseInt(bcryptSalt));
+    let user = await Users.findOne({
+      $and: [
+        {
+          _id: { $ne: userId },
+        },
+        {
+          phone_number: req.body.phone_number,
+        },
+      ],
+    });
+
+    if (user) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'User already exists with this phone number.' });
     }
 
-    const user = await Users.findByIdAndUpdate(userId, req.body, { new: true }); // Updating the user
+    if (req.file) {
+      req.body.profile_pic = req.file.path; // Creating a new property called photo in body object
+    }
+
+    user = await Users.findByIdAndUpdate(userId, req.body, { new: true }); // Updating the user
     res.json({ success: true, user }); // Success
   } catch (err) {
     // Error handling
@@ -107,7 +122,7 @@ exports.update = async (req, res) => {
  */
 exports.delete = async (req, res) => {
   try {
-    const userId = req.params.userId; // Getting user id from URL parameter
+    const { userId } = req.params; // Getting user id from URL parameter
     const user = await Users.findByIdAndDelete(userId); // Deleting the user
     res.json({ success: true, user }); // Success
   } catch (err) {

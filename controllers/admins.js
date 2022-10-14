@@ -73,7 +73,7 @@ exports.registerSuperAdmin = async (req, res) => {
 
     // Creating User
     req.body.password = bcrypt.hashSync(password, parseInt(bcryptSalt)); // Hashing the password with salt 8
-    const admin = await Admins.create({ ...req.body, role: 'super_admin' }); // Adding user in db
+    const admin = await Admins.create({ ...req.body, role: 'superadmin' }); // Adding user in db
 
     // Done
     res.json({ success: true, admin }); //Success
