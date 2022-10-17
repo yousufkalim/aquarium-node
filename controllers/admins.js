@@ -166,7 +166,7 @@ exports.confirmAuth = async (req, res) => {
  */
 exports.getAdmins = async (req, res) => {
   try {
-    let admins = await Admins.find({ role: 'admin' });
+    let admins = await Admins.find({ role: 'admin', active: true });
     res.json({ success: true, results: admins });
   } catch (err) {
     // Error handling

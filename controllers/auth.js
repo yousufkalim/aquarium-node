@@ -20,19 +20,25 @@ const origin = process.env.ORIGIN;
 exports.login = async (req, res) => {
   try {
     // Getting email and password
-    const { phone_number } = req.body;
+    const { phone_number, otp } = req.body;
 
     // Getting user from db
-    const user = await Users.findOne({ phone_number });
+    // eslint-disable-next-line camelcase
+    const user = await Users.findOne({ phone_number: phone_number.replaceAll(' ', '') });
 
     if (!user) {
       // If user not found
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    //* Creating payload with user object
+    if (user.otp !== otp) {
+      if (process.env.NODE_ENV !== 'dev')
+        return res.status(400).json({ success: false, message: 'Invalid OTP.' });
+    }
+
+    // Creating payload with user object
     // eslint-disable-next-line no-underscore-dangle
-    delete user._doc.password; //! Removing password from user object
+    delete user._doc.otp;
     const payload = { user };
 
     // Generating token
