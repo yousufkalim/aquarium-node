@@ -46,6 +46,41 @@ exports.validateAdmin = [
     .isLength({ min: 8 })
     .withMessage('Confirm password must be 8 characters long'),
 ];
+exports.validateAdminCreate = [
+  check('name', 'Name is required.').notEmpty().trim(),
+  check('email')
+    .notEmpty()
+    .withMessage('Email is required.')
+    .isEmail()
+    .withMessage('Invalid email.')
+    .trim(),
+  check('password')
+    .notEmpty()
+    .withMessage('Password is required.')
+    .isLength({ min: 8 })
+    .withMessage('Password must be 8 characters long'),
+];
+exports.validateAdminUpdate = [
+  check('name', 'Name is required.').notEmpty().trim(),
+  check('email')
+    .notEmpty()
+    .withMessage('Email is required.')
+    .isEmail()
+    .withMessage('Invalid email.')
+    .trim(),
+  check('phone_number')
+    .optional()
+    .custom((value) => {
+      if (value === '') {
+        return true;
+      }
+      let result = /^\([0-9]{3}\)\s*[0-9]{3}-[0-9]{4}$/.test(value);
+      if (!result) {
+        throw new Error('Phone number can only by in "(XXX) XXX-XXXX" format.');
+      }
+      return true;
+    }),
+];
 
 // Login validation
 exports.validateLogin = [

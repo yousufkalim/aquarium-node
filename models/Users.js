@@ -40,6 +40,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: 'uploads/logo.png',
     },
+    active: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,

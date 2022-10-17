@@ -9,10 +9,12 @@ const {
   validateLogin,
   changePasswordValidate,
   newPasswordValidate,
+  validateAdminUpdate,
+  validateAdminCreate,
 } = require('../middleware/validators');
 
 // Admin Register
-router.post('/', checkSuperAdminAuth, validateAdmin, isValidated, admins.register);
+router.post('/', checkSuperAdminAuth, validateAdminCreate, isValidated, admins.register);
 
 router.post('/superadmin', validateAdmin, isValidated, admins.registerSuperAdmin);
 
@@ -22,9 +24,24 @@ router.get('/auth', checkAdminAuth, admins.confirmAuth);
 
 router.get('/', checkSuperAdminAuth, admins.getAdmins);
 
-router.put('/:userId/edit', checkSuperAdminAuth, admins.updateAdmin);
+router.put(
+  '/:userId/edit',
+  checkSuperAdminAuth,
+  validateAdminUpdate,
+  isValidated,
+  admins.updateAdmin,
+);
 
-router.put('/', checkAdminAuth, upload.single('profile_pic'), admins.update);
+router.delete('/:userId/delete', checkSuperAdminAuth, admins.delete);
+
+router.put(
+  '/',
+  checkAdminAuth,
+  upload.single('profile_pic'),
+  validateAdminUpdate,
+  isValidated,
+  admins.update,
+);
 
 router.put('/password', checkAdminAuth, changePasswordValidate, isValidated, auth.changePassword); // Change password route
 
