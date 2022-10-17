@@ -3,6 +3,7 @@
  * @author Yousuf Kalim
  */
 const jwt = require('jsonwebtoken');
+const Admins = require('../models/Admins');
 const tokenSecret = process.env.JWT_SECRET;
 
 // Check auth
@@ -47,7 +48,7 @@ exports.checkAdminAuth = (req, res, next) => {
   }
 };
 // Check auth
-exports.checkSuperAdminAuth = (req, res, next) => {
+exports.checkSuperAdminAuth = async (req, res, next) => {
   // Get token from Header
   const header = req.get('Authorization');
 
@@ -64,7 +65,9 @@ exports.checkSuperAdminAuth = (req, res, next) => {
     const token = header.split(' ')[1];
     const { user } = jwt.verify(token, tokenSecret);
 
-    if (!user || user.role !== 'superadmin') {
+    let userChk = await Admins.findById(user._id);
+
+    if (!userChk || userChk.role !== 'superadmin' || !userChk.active) {
       return res.status(403).json({
         success: false,
         message: 'You are not authorized to access this resource',

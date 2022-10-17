@@ -16,19 +16,13 @@ const bcryptSalt = process.env.BCRYPT_SALT || 10;
  */
 exports.register = async (req, res) => {
   try {
-    let { email, password, confirmPassword } = req.body; // Getting required fields from body
+    let { email, password } = req.body; // Getting required fields from body
     const existingAdmin = await Admins.findOne({ email }); // Finding already existing user
 
     // Extra Validations
     if (existingAdmin) {
       // If we found existing user in db
       return res.status(409).json({ success: false, message: 'Admin already exists.' });
-    } else if (password !== confirmPassword) {
-      // Passwords not same
-      return res.status(400).json({
-        success: false,
-        message: 'Password and Confirm Password are not same.',
-      });
     }
 
     // Creating User
@@ -96,7 +90,7 @@ exports.login = async (req, res) => {
     const { email, password } = req.body;
 
     // Getting user from db
-    let admin = await Admins.findOne({ email });
+    let admin = await Admins.findOne({ email, active: true });
 
     if (!admin) {
       // If admin not found
@@ -115,7 +109,8 @@ exports.login = async (req, res) => {
     }
 
     // Creating payload with admin object
-    delete admin.password; // Removing password from admin object
+    // eslint-disable-next-line no-underscore-dangle
+    delete admin._doc.password; // Removing password from admin object
     const payload = { user: admin };
 
     // Generating token
@@ -173,6 +168,14 @@ exports.updateAdmin = async (req, res) => {
   try {
     let { userId } = req.params;
     let body = req.body;
+
+    let alreadyExist = await Admins.findOne({ _id: { $ne: userId }, email: body.email });
+    if (alreadyExist) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Admin already exists with this email.' });
+    }
+
     let user = await Admins.findByIdAndUpdate(userId, body, { new: true });
     res.json({ message: 'Admin updated.', results: user });
   } catch (err) {
@@ -189,14 +192,43 @@ exports.updateAdmin = async (req, res) => {
  */
 exports.update = async (req, res) => {
   try {
-    let { userId } = req.params;
+    let { _id } = req.user;
     let body = req.body;
+
+    let alreadyExist = await Admins.findOne({ _id: { $ne: _id }, email: body.email });
+    if (alreadyExist) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Admin already exists with this email.' });
+    }
+
     // Getting url of the image
     if (req.file) {
       req.body.profile_pic = req.file.path; // Creating a new property called photo in body object
     }
-    let user = await Admins.findByIdAndUpdate(userId, body, { new: true });
+
+    let user = await Admins.findByIdAndUpdate(_id, body, { new: true });
     res.json({ message: 'Admin updated.', results: user });
+  } catch (err) {
+    // Error handling
+    // eslint-disable-next-line no-console
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+/**
+ * Delete Admin
+ * @param {object} req
+ * @param {object} res
+ */
+exports.delete = async (req, res) => {
+  try {
+    let { userId } = req.params;
+
+    let user = await Admins.findByIdAndUpdate(userId, { active: false }, { new: true });
+
+    res.json({ message: 'Admin Deleted.', results: user });
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console
