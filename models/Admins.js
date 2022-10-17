@@ -22,7 +22,7 @@ const adminSchema = new Schema(
     role: {
       type: String,
       default: 'admin',
-      enum: ['admin', 'super_admin'],
+      enum: ['admin', 'superadmin'],
     },
     active: {
       type: Boolean,
@@ -33,6 +33,8 @@ const adminSchema = new Schema(
       type: String,
       default: 'uploads/logo.png',
     },
+    token: String,
+    token_expires_in: Date,
   },
   {
     timestamps: true,

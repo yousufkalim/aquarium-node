@@ -23,7 +23,7 @@ exports.checkAdminAuth = (req, res, next) => {
     const token = header.split(' ')[1];
     const { user } = jwt.verify(token, tokenSecret);
 
-    if (!user || !['admin', 'super_admin'].includes(user.role)) {
+    if (!user || !['admin', 'superadmin'].includes(user.role)) {
       return res.status(403).json({
         success: false,
         message: 'You are not authorized to access this resource',
@@ -64,7 +64,7 @@ exports.checkSuperAdminAuth = (req, res, next) => {
     const token = header.split(' ')[1];
     const { user } = jwt.verify(token, tokenSecret);
 
-    if (!user || user.role !== 'super_admin') {
+    if (!user || user.role !== 'superadmin') {
       return res.status(403).json({
         success: false,
         message: 'You are not authorized to access this resource',

@@ -36,7 +36,10 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
     otp: String,
-    profile_pic: String,
+    profile_pic: {
+      type: String,
+      default: 'uploads/logo.png',
+    },
   },
   {
     timestamps: true,
