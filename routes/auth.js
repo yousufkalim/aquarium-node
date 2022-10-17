@@ -16,7 +16,7 @@ const { isValidated, validateTechnicianLogin } = require('../middleware/validato
  */
 
 // Read
-// router.post('/login', validateTechnicianLogin, isValidated, auth.login); // Get all users at once
+router.post('/login', validateTechnicianLogin, isValidated, auth.login); // Get all users at once
 router.post('/', validateTechnicianLogin, isValidated, auth.sendOtp); // Get all users at once
 router.get('/', checkAuth, auth.confirmAuth);
 
