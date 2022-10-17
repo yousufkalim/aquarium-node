@@ -3,10 +3,12 @@
  * @author Yousuf Kalim
  */
 const jwt = require('jsonwebtoken');
+const Admins = require('../models/Admins');
+const Users = require('../models/Users');
 const tokenSecret = process.env.JWT_SECRET;
 
 // Check auth
-exports.checkAuth = (req, res, next) => {
+exports.checkAuth = async (req, res, next) => {
   // Get token from Header
   const header = req.get('Authorization');
 
@@ -23,7 +25,14 @@ exports.checkAuth = (req, res, next) => {
     const token = header.split(' ')[1];
     const { user } = jwt.verify(token, tokenSecret);
 
-    if (!user) {
+    let userChk;
+    if (user.role === 'user') {
+      userChk = await Users.findById(user._id);
+    } else {
+      userChk = await Admins.findById(user._id);
+    }
+
+    if (!userChk) {
       return res.status(403).json({
         success: false,
         message: 'You are not authorized to access this resource',

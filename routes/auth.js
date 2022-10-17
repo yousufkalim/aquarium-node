@@ -5,7 +5,7 @@
 const router = require('express').Router();
 const auth = require('../controllers/auth');
 const { checkAuth } = require('../middleware/checkAuth');
-const { validateLogin, isValidated } = require('../middleware/validators');
+const { isValidated, validateTechnicianLogin } = require('../middleware/validators');
 
 /**
  * ////////////////////////// Routes /////////////////////////
@@ -16,7 +16,8 @@ const { validateLogin, isValidated } = require('../middleware/validators');
  */
 
 // Read
-router.post('/login', validateLogin, isValidated, auth.login); // Get all users at once
+// router.post('/login', validateTechnicianLogin, isValidated, auth.login); // Get all users at once
+router.post('/', validateTechnicianLogin, isValidated, auth.sendOtp); // Get all users at once
 router.get('/', checkAuth, auth.confirmAuth);
 
 // Export
