@@ -93,6 +93,23 @@ exports.validateLogin = [
     .toLowerCase(),
   check('password', 'Password is required.').notEmpty(),
 ];
+exports.validateTechnicianLogin = [
+  check('phone_number')
+    .optional()
+    .custom((value) => {
+      let result = /^\([0-9]{3}\)\s*[0-9]{3}-[0-9]{4}$/.test(value);
+      if (!result) {
+        throw new Error('Phone number can only by in "(XXX) XXX-XXXX" format.');
+      }
+      return true;
+    }),
+  check('otp')
+    .optional()
+    .isNumeric()
+    .withMessage('OTP can only be numeric.')
+    .isLength({ min: 4, max: 4 })
+    .withMessage('OTP must be 4 characters.'),
+];
 
 // Change password validation
 exports.changePasswordValidate = [

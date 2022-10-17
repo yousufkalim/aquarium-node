@@ -7,7 +7,7 @@ const Admins = require('../models/Admins');
 const tokenSecret = process.env.JWT_SECRET;
 
 // Check auth
-exports.checkAdminAuth = (req, res, next) => {
+exports.checkAdminAuth = async (req, res, next) => {
   // Get token from Header
   const header = req.get('Authorization');
 
@@ -24,7 +24,9 @@ exports.checkAdminAuth = (req, res, next) => {
     const token = header.split(' ')[1];
     const { user } = jwt.verify(token, tokenSecret);
 
-    if (!user || !['admin', 'superadmin'].includes(user.role)) {
+    let userChk = await Admins.findById(user._id);
+
+    if (!userChk || !['admin', 'superadmin'].includes(userChk.role) || !userChk.active) {
       return res.status(403).json({
         success: false,
         message: 'You are not authorized to access this resource',

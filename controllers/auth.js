@@ -20,26 +20,19 @@ const origin = process.env.ORIGIN;
 exports.login = async (req, res) => {
   try {
     // Getting email and password
-    const { email, password } = req.body;
+    const { phone_number } = req.body;
 
     // Getting user from db
-    const user = await Users.findOne({ email });
+    const user = await Users.findOne({ phone_number });
 
     if (!user) {
       // If user not found
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Comparing password
-    const isMatched = bcrypt.compareSync(password, user.password);
-
-    if (!isMatched) {
-      // If password not matched
-      return res.status(400).json({ success: false, message: 'Invalid Password' });
-    }
-
-    // Creating payload with user object
-    delete user.password; // Removing password from user object
+    //* Creating payload with user object
+    // eslint-disable-next-line no-underscore-dangle
+    delete user._doc.password; //! Removing password from user object
     const payload = { user };
 
     // Generating token
@@ -49,6 +42,33 @@ exports.login = async (req, res) => {
       // done
       res.json({ success: true, user, token });
     });
+  } catch (err) {
+    // Error handling
+    // eslint-disable-next-line no-console
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+exports.sendOtp = async (req, res) => {
+  try {
+    // Getting email and password
+    const { phone_number } = req.body;
+    // Getting user from db
+    // eslint-disable-next-line camelcase
+    const user = await Users.findOne({ phone_number: phone_number.replaceAll(' ', '') });
+
+    if (!user) {
+      // If user not found
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    let otp = Math.random().toString(10).slice(-4);
+    user.otp = otp;
+    await user.save();
+
+    //TODO: send OTP via twilio
+    return res.json({ success: true, message: 'OTP Sent.' });
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console
