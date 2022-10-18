@@ -1,6 +1,6 @@
 /**
- * User auth routes
  * @author Yousuf Kalim
+ * @author Najam Ul Saqib
  */
 const router = require('express').Router();
 const auth = require('../controllers/auth');

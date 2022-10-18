@@ -19,6 +19,13 @@ const checklistSchema = new mongoose.Schema(
       ref: 'admins',
       required: true,
     },
+    attachment: {
+      url: String,
+      type: {
+        type: String,
+        enum: ['video', 'image'],
+      },
+    },
   },
   {
     timestamps: true,

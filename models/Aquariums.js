@@ -22,22 +22,15 @@ const aquariumSchema = new mongoose.Schema(
       required: true,
     },
     tank_details: {
-      size: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'tanks',
-      },
-      type: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'tanks',
-      },
-      material: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'tanks',
-      },
-      filter: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'tanks',
-      },
+      size: String,
+      type: String,
+      material: String,
+      filter: String,
+    },
+    admin: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'admins',
+      required: true,
     },
   },
   {

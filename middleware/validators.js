@@ -149,6 +149,46 @@ exports.newPasswordValidate = [
     .withMessage('Confirm password must be 8 characters long'),
 ];
 
+exports.validateTankDetails = [
+  check('type')
+    .notEmpty()
+    .withMessage('Type is required.')
+    .isIn(['size', 'type', 'material', 'filter'])
+    .withMessage('Invalid type.'),
+  check('value', 'Value is required.').notEmpty(),
+];
+
+exports.validateCheckList = [
+  check('type')
+    .notEmpty()
+    .withMessage('Checklist type is required.')
+    .isIn(['service', 'loadup', 'unload'])
+    .withMessage('Invalid checklist type.'),
+  check('title', 'Title is required.').notEmpty(),
+];
+exports.validateProduct = [
+  check('name', 'Product name is required.').notEmpty(),
+  check('price')
+    .notEmpty()
+    .withMessage('Price is required.')
+    .isNumeric()
+    .withMessage('Price can only be numeric.'),
+];
+exports.validateClient = [
+  check('first_name', 'First name is required.').notEmpty(),
+  check('last_name', 'Last name is required.').notEmpty(),
+  check('phone_number')
+    .optional()
+    .custom((value) => {
+      let result = /^\([0-9]{3}\)\s*[0-9]{3}-[0-9]{4}$/.test(value);
+      if (!result) {
+        throw new Error('Phone number can only by in "(XXX) XXX-XXXX" format.');
+      }
+      return true;
+    }),
+  check('email').optional().isEmail().withMessage('Invalid Email').trim().toLowerCase(),
+];
+
 /*
 ======================
 Result

@@ -1,6 +1,7 @@
 /**
  * User CRUD routes
  * @author Yousuf Kalim
+ * @author Najam Ul Saqib
  */
 const router = require('express').Router();
 const users = require('../controllers/users');
