@@ -28,6 +28,10 @@ const clientSchema = new mongoose.Schema(
       ref: 'admins',
       required: true,
     },
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

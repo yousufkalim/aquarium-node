@@ -1,3 +1,7 @@
+/**
+ * Admin Routes
+ * @author Najam Ul saqib
+ */
 const router = require('express').Router();
 const admins = require('../controllers/admins');
 const auth = require('../controllers/auth');
