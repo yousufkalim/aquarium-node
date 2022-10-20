@@ -6,8 +6,11 @@ const Clients = require('../models/Clients');
 exports.get = async (req, res) => {
   try {
     let { _id } = req.user;
-    let clients = await Clients.find({ admin: _id, deleted: false });
-    res.json({ success: true, results: clients });
+    let clients = await Clients.find({ admin: _id, deleted: false }).populate('aquariums');
+    res.json({
+      success: true,
+      results: clients,
+    });
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console
@@ -19,7 +22,7 @@ exports.get = async (req, res) => {
 exports.getById = async (req, res) => {
   try {
     let { clientId } = req.params;
-    let client = await Clients.findOne({ _id: clientId, deleted: false });
+    let client = await Clients.findOne({ _id: clientId, deleted: false }).populate('aquariums');
     if (!client) {
       return res.status(404).json({ success: true, message: 'Client not found.' });
     }

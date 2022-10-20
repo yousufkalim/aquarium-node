@@ -4,7 +4,7 @@
 const router = require('express').Router();
 const tanks = require('../controllers/tanks');
 const { isValidated, validateTankDetails } = require('../middleware/validators');
-const { checkAdminAuth } = require('../middleware/adminAuth');
+const { checkAdminAuth } = require('../middleware/checkAuth');
 // Read
 router.get('/', checkAdminAuth, tanks.get); // Get tank details
 
