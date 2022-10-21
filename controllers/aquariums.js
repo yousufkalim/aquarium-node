@@ -41,7 +41,10 @@ exports.create = async (req, res) => {
   try {
     let { client } = req.body;
     let { _id } = req.user;
-    const aquarium = await Aquariums.create({ ...req.body, admin: _id });
+    let aquarium = await Aquariums.create({ ...req.body, admin: _id });
+    aquarium = await Aquariums.populate(aquarium, {
+      path: 'client',
+    });
     await Clients.findByIdAndUpdate(client, {
       $push: {
         aquariums: aquarium._id,
@@ -63,7 +66,9 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     let { aquariumId } = req.params;
-    const aquarium = await Aquariums.findByIdAndUpdate(aquariumId, req.body, { new: true });
+    const aquarium = await Aquariums.findByIdAndUpdate(aquariumId, req.body, {
+      new: true,
+    }).populate('client');
 
     res.json({
       success: false,
