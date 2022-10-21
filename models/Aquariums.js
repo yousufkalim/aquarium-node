@@ -23,7 +23,9 @@ const aquariumSchema = new mongoose.Schema(
     },
     tank_details: {
       size: String,
-      type: String,
+      type: {
+        type: String,
+      },
       material: String,
       filter: String,
     },
@@ -31,6 +33,10 @@ const aquariumSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'admins',
       required: true,
+    },
+    deleted: {
+      type: Boolean,
+      default: false,
     },
   },
   {

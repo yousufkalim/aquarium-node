@@ -5,8 +5,7 @@
  */
 const router = require('express').Router();
 const users = require('../controllers/users');
-const { checkAdminAuth } = require('../middleware/adminAuth');
-const { checkAuth } = require('../middleware/checkAuth');
+const { checkAuth, checkAdminAuth } = require('../middleware/checkAuth');
 const { upload } = require('../middleware/multer');
 const { validateUser, isValidated } = require('../middleware/validators');
 

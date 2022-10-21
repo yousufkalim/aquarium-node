@@ -13,6 +13,7 @@ router.use('/tank', require('./tank')); // All the auth routes
 router.use('/checklist', require('./checklist')); // All the auth routes
 router.use('/products', require('./products')); // All the auth routes
 router.use('/clients', require('./clients')); // All the auth routes
+router.use('/schedule', require('./schedule')); // All the auth routes
 
 // Export
 module.exports = router;

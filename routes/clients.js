@@ -4,8 +4,10 @@
 const router = require('express').Router();
 const clients = require('../controllers/clients');
 const { isValidated, validateClient } = require('../middleware/validators');
-const { checkAdminAuth } = require('../middleware/adminAuth');
-const { checkAuth } = require('../middleware/checkAuth');
+const { checkAuth, checkAdminAuth } = require('../middleware/checkAuth');
+
+router.use('/aquariums', require('./aquariums')); // All the aquariums routes
+
 // Read
 router.get('/', checkAdminAuth, clients.get); // Get clients
 router.get('/:clientId', checkAuth, clients.getById); // Get client

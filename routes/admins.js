@@ -5,7 +5,7 @@
 const router = require('express').Router();
 const admins = require('../controllers/admins');
 const auth = require('../controllers/auth');
-const { checkAdminAuth, checkSuperAdminAuth } = require('../middleware/adminAuth');
+const { checkAdminAuth, checkSuperAdminAuth } = require('../middleware/checkAuth');
 const { upload } = require('../middleware/multer');
 const {
   validateAdmin,

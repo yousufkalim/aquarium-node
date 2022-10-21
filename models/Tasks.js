@@ -6,7 +6,7 @@ const taskSchema = new mongoose.Schema(
   {
     type: {
       type: String,
-      enum: ['service', 'loadup', 'unload'],
+      enum: ['service', 'loadup', 'unload', 'drive', 'lunch', 'outOfOffice', 'endOfShift'],
       required: true,
     },
     status: {
@@ -26,8 +26,13 @@ const taskSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
-    value: {
-      type: String,
+    aquarium: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'aquariums',
+    },
+    admin: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'admins',
       required: true,
     },
     technician: {
@@ -41,12 +46,11 @@ const taskSchema = new mongoose.Schema(
         ref: 'products',
       },
     ],
-    schedule: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'schedules',
-      },
-    ],
+    schedule: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'schedules',
+      required: true,
+    },
     checklists: [
       {
         item: {

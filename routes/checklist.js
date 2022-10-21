@@ -4,8 +4,7 @@
 const router = require('express').Router();
 const checklist = require('../controllers/checklist');
 const { isValidated, validateCheckList } = require('../middleware/validators');
-const { checkAdminAuth } = require('../middleware/adminAuth');
-const { checkAuth } = require('../middleware/checkAuth');
+const { checkAuth, checkAdminAuth } = require('../middleware/checkAuth');
 const { upload } = require('../middleware/multer');
 // Read
 router.get('/', checkAuth, checklist.get); // Get tank details

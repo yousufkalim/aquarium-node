@@ -3,6 +3,8 @@
  * @author Yousuf Kalim
  */
 const { check, validationResult } = require('express-validator');
+const moment = require('moment');
+const DATE_FORMAT = process.env.DATE_FORMAT || 'DD/MM/YYYY';
 
 /*
 ====================
@@ -187,6 +189,85 @@ exports.validateClient = [
       return true;
     }),
   check('email').optional().isEmail().withMessage('Invalid Email').trim().toLowerCase(),
+];
+exports.validateAquarium = [
+  check('address.lat', 'Address is required.').notEmpty(),
+  check('address.lng', 'Address is required.').notEmpty(),
+  check('service_details', 'Service details are required.').notEmpty(),
+  check('client')
+    .notEmpty()
+    .withMessage('Client is required.')
+    .isMongoId()
+    .withMessage('Invalid client.'),
+  check('tank_details.size', 'Tank size is required.').notEmpty(),
+  check('tank_details.type', 'Tank type is required.').notEmpty(),
+  check('tank_details.material', 'Tank material is required.').notEmpty(),
+  check('tank_details.filter', 'Tank filter is required.').notEmpty(),
+];
+
+exports.validateTask = [
+  check('technician')
+    .notEmpty()
+    .withMessage('Technician is required.')
+    .isMongoId()
+    .withMessage('Invalid technician.'),
+  check('aquarium').optional().isMongoId().withMessage('Invalid aquarium.'),
+  check('type')
+    .notEmpty()
+    .withMessage('Type is required.')
+    .isIn(['service', 'loadup', 'unload', 'drive', 'lunch', 'outOfOffice', 'endOfShift'])
+    .withMessage('Invalid type.'),
+  check('date')
+    .notEmpty()
+    .withMessage('Date is required.')
+    .custom((value) => {
+      let date = moment(value, DATE_FORMAT, true);
+
+      let result = date.isValid();
+      if (!result) {
+        throw new Error('Invalid date.');
+      }
+
+      result = date.isSameOrAfter(moment(), 'day');
+      if (!result) {
+        throw new Error('Past dates are not allowed');
+      }
+
+      return true;
+    }),
+  check('start_time')
+    .notEmpty()
+    .withMessage('Start time is required.')
+    .custom((value) => {
+      let result = /^(0[1-9]|1[0-2]):([0-5][0-9]) ((a|p)m|(A|P)M)$/.test(value);
+      if (!result) {
+        throw new Error('Invalid start time.');
+      }
+
+      return true;
+    }),
+  check('end_time')
+    .notEmpty()
+    .withMessage('End time is required.')
+    .custom((value, { req }) => {
+      let result = /^(0[1-9]|1[0-2]):([0-5][0-9]) ((a|p)m|(A|P)M)$/.test(value);
+      if (!result) {
+        throw new Error('Invalid end time.');
+      }
+
+      let start = moment(
+        req.body.date + ' ' + req.body.start_time,
+        DATE_FORMAT + ' ' + 'HH:mm a',
+        true,
+      );
+      let end = moment(req.body.date + ' ' + value, DATE_FORMAT + ' ' + 'HH:mm a', true);
+      result = start.isSameOrAfter(end);
+      if (result) {
+        throw new Error('End time should be after start time.');
+      }
+
+      return true;
+    }),
 ];
 
 /*
