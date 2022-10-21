@@ -11,6 +11,8 @@ router.post('/', checkAdminAuth, validateTask, isValidated, tasks.create);
 
 router.get('/', checkAdminAuth, tasks.getServices);
 
+router.put('/:taskId', validateTask, isValidated, checkAdminAuth, tasks.update);
+
 router.delete('/:taskId', checkAdminAuth, tasks.delete);
 
 // Export
