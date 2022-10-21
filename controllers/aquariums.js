@@ -51,7 +51,7 @@ exports.create = async (req, res) => {
       },
     });
     res.json({
-      success: false,
+      success: true,
       message: 'Aquarium created.',
       results: aquarium,
     });
@@ -71,7 +71,7 @@ exports.update = async (req, res) => {
     }).populate('client');
 
     res.json({
-      success: false,
+      success: true,
       message: 'Aquarium updated.',
       results: aquarium,
     });
@@ -103,7 +103,7 @@ exports.delete = async (req, res) => {
       },
     );
     res.json({
-      success: false,
+      success: true,
       message: 'Aquarium deleted.',
       results: aquarium,
     });

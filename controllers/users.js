@@ -85,14 +85,7 @@ exports.update = async (req, res) => {
     const { userId } = req.params; // Getting user id from URL parameter
 
     let user = await Users.findOne({
-      $and: [
-        {
-          _id: { $ne: userId },
-        },
-        {
-          phone_number: req.body.phone_number,
-        },
-      ],
+      $and: [{ _id: { $ne: userId } }, { phone_number: req.body.phone_number }],
     });
 
     if (user) {

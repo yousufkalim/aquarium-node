@@ -156,7 +156,7 @@ exports.update = async (req, res) => {
     });
 
     if (checkAvailability.length) {
-      return res.json({ success: false, message: 'Time slot not available' });
+      return res.status(409).json({ success: false, message: 'Time slot not available' });
     }
 
     if (date.isSame(moment(task.date), 'date')) {
