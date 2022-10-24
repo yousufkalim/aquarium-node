@@ -194,7 +194,7 @@ exports.updateAdmin = async (req, res) => {
     }
 
     let user = await Admins.findByIdAndUpdate(userId, body, { new: true });
-    res.json({ message: 'Admin updated.', results: user });
+    res.json({ success: true, message: 'Admin updated.', results: user });
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console
@@ -225,7 +225,7 @@ exports.update = async (req, res) => {
     }
 
     let user = await Admins.findByIdAndUpdate(_id, body, { new: true });
-    res.json({ message: 'Admin updated.', results: user });
+    res.json({ success: true, message: 'Admin updated.', results: user });
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console
@@ -245,7 +245,7 @@ exports.delete = async (req, res) => {
 
     let user = await Admins.findByIdAndUpdate(userId, { active: false }, { new: true });
 
-    res.json({ message: 'Admin Deleted.', results: user });
+    res.json({ success: true, message: 'Admin Deleted.', results: user });
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console

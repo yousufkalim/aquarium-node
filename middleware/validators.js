@@ -268,6 +268,7 @@ exports.validateTask = [
 
       return true;
     }),
+  check('repeat').optional().isNumeric().withMessage('Repeat must be in numeric.'),
 ];
 
 /*

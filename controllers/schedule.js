@@ -25,9 +25,7 @@ exports.get = async (req, res) => {
       });
     }
 
-    res.json({
-      schedule,
-    });
+    res.json({ success: true, results: schedule });
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console

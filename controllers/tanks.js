@@ -10,10 +10,7 @@ exports.get = async (req, res) => {
     let { _id } = req.user;
     let tanks = await Tanks.find({ admin: _id });
 
-    res.json({
-      success: true,
-      tanks,
-    });
+    res.json({ success: true, tanks });
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console
