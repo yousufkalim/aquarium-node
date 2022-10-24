@@ -25,7 +25,7 @@ exports.register = async (req, res) => {
     if (existingAdmin && existingAdmin.active) {
       // If we found existing user in db
       return res.status(409).json({ success: false, message: 'Admin already exists.' });
-    } else if (!existingAdmin.active) {
+    } else if (existingAdmin && !existingAdmin.active) {
       existingAdmin.name = req.body.name;
       existingAdmin.password = req.body.password;
       existingAdmin.active = true;
