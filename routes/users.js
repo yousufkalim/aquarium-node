@@ -37,7 +37,7 @@ router.put(
 ); // Update a specific user by it's id
 
 // Delete
-// router.delete('/:userId', checkAuth, users.delete); // delete a specific user by it's id
+router.delete('/:userId', checkAdminAuth, users.delete); // delete a specific user by it's id
 
 // Export
 module.exports = router;

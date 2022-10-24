@@ -20,6 +20,19 @@ exports.create = async (req, res) => {
     // Extra Validations
     if (existingUser) {
       // If we found existing user in db
+      if (!existingUser.active) {
+        existingUser.first_name = req.body.first_name;
+        existingUser.last_name = req.body.last_name;
+        existingUser.active = true;
+        existingUser.admin = admin;
+        existingUser.save();
+
+        return res.json({
+          success: true,
+          admin: existingUser,
+          message: 'Technician added.',
+        });
+      }
       return res.status(409).json({ success: false, message: 'User already exists.' });
     }
 
@@ -47,7 +60,7 @@ exports.create = async (req, res) => {
 exports.getAll = async (req, res) => {
   try {
     let admin = req.user;
-    const users = await Users.find({ admin: admin._id }); // Finding all the users from db
+    const users = await Users.find({ admin: admin._id, active: true }); // Finding all the users from db
     res.json({ success: true, users }); // Success
   } catch (err) {
     // Error handling
@@ -65,7 +78,7 @@ exports.getAll = async (req, res) => {
 exports.getById = async (req, res) => {
   try {
     const { userId } = req.params; // Getting user id from URL parameter
-    const user = await Users.findById(userId); // Finding user by id
+    const user = await Users.findOne({ _id: userId, active: true }); // Finding user by id
     res.json({ success: true, user }); // Success
   } catch (err) {
     // Error handling
@@ -116,8 +129,8 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
   try {
     const { userId } = req.params; // Getting user id from URL parameter
-    const user = await Users.findByIdAndDelete(userId); // Deleting the user
-    res.json({ success: true, user }); // Success
+    const user = await Users.findByIdAndUpdate(userId, { active: false }, { new: true }); // Deleting the user
+    res.json({ success: true, message: 'User deleted.', user }); // Success
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console

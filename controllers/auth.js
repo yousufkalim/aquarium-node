@@ -23,8 +23,11 @@ exports.login = async (req, res) => {
     const { phone_number, otp } = req.body;
 
     // Getting user from db
-    // eslint-disable-next-line camelcase
-    const user = await Users.findOne({ phone_number: phone_number.replaceAll(' ', '') });
+    const user = await Users.findOne({
+      // eslint-disable-next-line camelcase
+      phone_number: phone_number.replaceAll(' ', ''),
+      active: true,
+    });
 
     if (!user) {
       // If user not found
@@ -61,8 +64,11 @@ exports.sendOtp = async (req, res) => {
     // Getting email and password
     const { phone_number } = req.body;
     // Getting user from db
-    // eslint-disable-next-line camelcase
-    const user = await Users.findOne({ phone_number: phone_number.replaceAll(' ', '') });
+    const user = await Users.findOne({
+      // eslint-disable-next-line camelcase
+      phone_number: phone_number.replaceAll(' ', ''),
+      active: true,
+    });
 
     if (!user) {
       // If user not found
