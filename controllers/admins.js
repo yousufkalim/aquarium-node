@@ -22,25 +22,27 @@ exports.register = async (req, res) => {
     req.body.password = bcrypt.hashSync(password, parseInt(bcryptSalt)); // Hashing the password with salt 8
 
     // Extra Validations
-    if (existingAdmin && existingAdmin.active) {
+    if (existingAdmin) {
       // If we found existing user in db
-      return res.status(409).json({ success: false, message: 'Admin already exists.' });
-    } else if (!existingAdmin.active) {
-      existingAdmin.name = req.body.name;
-      existingAdmin.password = req.body.password;
-      existingAdmin.active = true;
+      if (!existingAdmin.active) {
+        existingAdmin.name = req.body.name;
+        existingAdmin.password = req.body.password;
+        existingAdmin.active = true;
 
-      await existingAdmin.save();
-      sendEmail({
-        email,
-        subject: 'Your account is created',
-        body: `Your account is created on ${email} and Password is ${password}.`,
-      });
-      return res.json({
-        success: true,
-        admin: existingAdmin,
-        message: 'Account created and email sent.',
-      }); //Success
+        await existingAdmin.save();
+        sendEmail({
+          email,
+          subject: 'Your account is created',
+          body: `Your account is created on ${email} and Password is ${password}.`,
+        });
+
+        return res.json({
+          success: true,
+          admin: existingAdmin,
+          message: 'Account created and email sent.',
+        }); //Success
+      }
+      return res.status(409).json({ success: false, message: 'Admin already exists.' });
     }
 
     // Creating User
