@@ -41,7 +41,6 @@ exports.create = async (req, res) => {
 
     let client = await Clients.create({
       ...req.body,
-      phone_number: req.body.phone_number.replaceAll(' ', ''),
       admin: _id,
     });
 

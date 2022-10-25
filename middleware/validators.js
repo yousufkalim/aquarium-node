@@ -20,13 +20,10 @@ exports.validateUser = [
   check('phone_number')
     .notEmpty()
     .withMessage('Phone number is required.')
-    .custom((value) => {
-      let result = /^\([0-9]{3}\)\s*[0-9]{3}-[0-9]{4}$/.test(value);
-      if (!result) {
-        throw new Error('Phone number can only by in "(XXX) XXX-XXXX" format.');
-      }
-      return true;
-    }),
+    .isNumeric()
+    .withMessage('Phone number can only be numeric.')
+    .isLength({ min: 10, max: 10 })
+    .withMessage('Phone number must be 10 digits long'),
 ];
 exports.validateAdmin = [
   check('name', 'Name is required.').notEmpty().trim(),
@@ -71,17 +68,12 @@ exports.validateAdminUpdate = [
     .withMessage('Invalid email.')
     .trim(),
   check('phone_number')
-    .optional()
-    .custom((value) => {
-      if (value === '') {
-        return true;
-      }
-      let result = /^\([0-9]{3}\)\s*[0-9]{3}-[0-9]{4}$/.test(value);
-      if (!result) {
-        throw new Error('Phone number can only by in "(XXX) XXX-XXXX" format.');
-      }
-      return true;
-    }),
+    .notEmpty()
+    .withMessage('Phone number is required.')
+    .isNumeric()
+    .withMessage('Phone number can only be numeric.')
+    .isLength({ min: 10, max: 10 })
+    .withMessage('Phone number must be 10 digits long'),
 ];
 
 // Login validation
@@ -97,14 +89,12 @@ exports.validateLogin = [
 ];
 exports.validateTechnicianLogin = [
   check('phone_number')
-    .optional()
-    .custom((value) => {
-      let result = /^\([0-9]{3}\)\s*[0-9]{3}-[0-9]{4}$/.test(value);
-      if (!result) {
-        throw new Error('Phone number can only by in "(XXX) XXX-XXXX" format.');
-      }
-      return true;
-    }),
+    .notEmpty()
+    .withMessage('Phone number is required.')
+    .isNumeric()
+    .withMessage('Phone number can only be numeric.')
+    .isLength({ min: 10, max: 10 })
+    .withMessage('Phone number must be 10 digits long'),
   check('otp')
     .optional()
     .isNumeric()
@@ -180,14 +170,12 @@ exports.validateClient = [
   check('first_name', 'First name is required.').notEmpty(),
   check('last_name', 'Last name is required.').notEmpty(),
   check('phone_number')
-    .optional()
-    .custom((value) => {
-      let result = /^\([0-9]{3}\)\s*[0-9]{3}-[0-9]{4}$/.test(value);
-      if (!result) {
-        throw new Error('Phone number can only by in "(XXX) XXX-XXXX" format.');
-      }
-      return true;
-    }),
+    .notEmpty()
+    .withMessage('Phone number is required.')
+    .isNumeric()
+    .withMessage('Phone number can only be numeric.')
+    .isLength({ min: 10, max: 10 })
+    .withMessage('Phone number must be 10 digits long'),
   check('email').optional().isEmail().withMessage('Invalid Email').trim().toLowerCase(),
 ];
 exports.validateAquarium = [

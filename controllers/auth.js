@@ -25,7 +25,7 @@ exports.login = async (req, res) => {
     // Getting user from db
     const user = await Users.findOne({
       // eslint-disable-next-line camelcase
-      phone_number: phone_number.replaceAll(' ', ''),
+      phone_number,
       active: true,
     });
 
@@ -66,7 +66,7 @@ exports.sendOtp = async (req, res) => {
     // Getting user from db
     const user = await Users.findOne({
       // eslint-disable-next-line camelcase
-      phone_number: phone_number.replaceAll(' ', ''),
+      phone_number,
       active: true,
     });
 
