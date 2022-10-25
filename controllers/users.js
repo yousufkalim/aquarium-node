@@ -12,9 +12,6 @@ const Users = require('../models/Users');
 exports.create = async (req, res) => {
   try {
     let admin = req.user;
-    let phoneNumber = req.body.phone_number; // Getting required fields from body
-
-    req.body.phone_number = phoneNumber.replaceAll(' ', '');
     const existingUser = await Users.findOne({ phone_number: req.body.phone_number }); // Finding already existing user
 
     // Extra Validations
