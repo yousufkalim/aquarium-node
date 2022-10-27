@@ -1,3 +1,5 @@
+const { address } = require('../controllers/address');
+
 /**
  * All api routes handles here
  * @author Yousuf Kalim
@@ -14,6 +16,7 @@ router.use('/checklist', require('./checklist')); // All the auth routes
 router.use('/products', require('./products')); // All the auth routes
 router.use('/clients', require('./clients')); // All the auth routes
 router.use('/schedule', require('./schedule')); // All the auth routes
+router.get('/address', address);
 
 // Export
 module.exports = router;

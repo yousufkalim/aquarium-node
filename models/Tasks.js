@@ -53,9 +53,17 @@ const taskSchema = new mongoose.Schema(
     },
     checklists: [
       {
-        item: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'checklists',
+        title: {
+          type: String,
+          required: true,
+        },
+        description: String,
+        attachment: {
+          url: String,
+          type: {
+            type: String,
+            enum: ['video', 'image'],
+          },
         },
         status: Boolean,
         reason: String,

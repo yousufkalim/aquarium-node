@@ -2,7 +2,7 @@
  * All the validation
  * @author Yousuf Kalim
  */
-const { check, validationResult } = require('express-validator');
+const { check, validationResult, param } = require('express-validator');
 const moment = require('moment');
 const DATE_FORMAT = process.env.DATE_FORMAT || 'DD/MM/YYYY';
 
@@ -257,6 +257,25 @@ exports.validateTask = [
       return true;
     }),
   check('repeat').optional().isNumeric().withMessage('Repeat must be in numeric.'),
+];
+
+exports.validateAttendance = [
+  check('type')
+    .notEmpty()
+    .withMessage('Clock type is required.')
+    .isIn(['clock_in', 'clock_out'])
+    .withMessage('Invalid clock type'),
+  check('reason')
+    .optional()
+    .isIn(['break', 'lunch', 'outOfOffice', 'endOfShift'])
+    .withMessage('Invalid clock-out reason'),
+];
+
+exports.validateTaskCheckList = [
+  param('taskId').isMongoId().withMessage('Invalid task id.'),
+  check('checklist').isArray().withMessage('Check list must be in array'),
+  check('checklist.*.title').notEmpty().withMessage('Checklist title is required'),
+  check('checklist.*.status').notEmpty().withMessage('Checklist status is required'),
 ];
 
 /*
