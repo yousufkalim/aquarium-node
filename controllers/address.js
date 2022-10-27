@@ -1,5 +1,5 @@
 const axios = require('axios');
-const API_KEY = process.env.GOOGLE_API_KEY || 'GOOGLE_API_KEY_REDACTED';
+const API_KEY = process.env.GOOGLE_API_KEY;
 exports.address = async (req, res) => {
   try {
     let { text } = req.query;
