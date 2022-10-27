@@ -183,11 +183,59 @@ exports.update = async (req, res) => {
     task.start_time = startTime;
     task.end_time = endTime;
     task.schedule = schedule._id;
+    task.date = date;
     schedule.tasks.push(task._id);
     await task.save();
     await schedule.save();
 
     res.json({ success: true, message: 'Task Updated. ', results: task });
+  } catch (err) {
+    // Error handling
+    // eslint-disable-next-line no-console
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+exports.getNextService = async (req, res) => {
+  try {
+    let { _id } = req.user;
+    let date = moment().startOf('day');
+    let services = await Tasks.find({
+      date,
+      type: 'service',
+      technician: _id,
+      status: 'pending',
+    })
+      .sort({ start_time: 'asc' })
+      .limit(1)
+      .populate('aquarium');
+    res.json({ success: true, results: services[0] ?? null });
+  } catch (err) {
+    // Error handling
+    // eslint-disable-next-line no-console
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+exports.completeTask = async (req, res) => {
+  try {
+    let { _id } = req.user;
+    let { taskId } = req.params;
+    let task = await Tasks.findOne({ _id: taskId, technician: _id });
+
+    if (!task) {
+      return res.status(404).json({ success: false, message: 'Task not found.' });
+    } else if (task.status === 'completed') {
+      return res.status(400).json({ success: false, message: 'Task already completed.' });
+    }
+
+    task.checklists = req.body.checklist;
+    task.status = 'completed';
+    await task.save();
+
+    res.json({ success: true, results: task, message: 'Task completed.' });
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console

@@ -3,6 +3,8 @@
  * @author Yousuf Kalim
  */
 const Users = require('../models/Users');
+const Schedules = require('../models/Schedules');
+const moment = require('moment');
 
 /**
  * Create User - Signup
@@ -128,6 +130,81 @@ exports.delete = async (req, res) => {
     const { userId } = req.params; // Getting user id from URL parameter
     const user = await Users.findByIdAndUpdate(userId, { active: false }, { new: true }); // Deleting the user
     res.json({ success: true, message: 'User deleted.', user }); // Success
+  } catch (err) {
+    // Error handling
+    // eslint-disable-next-line no-console
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+exports.attendance = async (req, res) => {
+  try {
+    let date = moment().startOf('day');
+    let { type, reason } = req.body;
+
+    let { _id } = req.user;
+
+    let user = await Users.findById(_id);
+    let schedule = await Schedules.findOne({ technician: _id, date });
+
+    if (!schedule) {
+      //? if no schedule found
+      if (type === 'clock_out') {
+        return res.status(400).json({ success: false, message: 'You need to clock-in first.' });
+      }
+      schedule = new Schedules({ technician: _id, date });
+      schedule.attendance.push({
+        clock_in: moment(),
+      });
+      await schedule.save();
+      user.current_status = 'clocked_in';
+      await user.save();
+      return res.json({ success: true, message: 'Clocked in.' });
+    } else if (schedule.attendance.length === 0) {
+      //? if schedule's attendance array is empty.
+      if (type === 'clock_out') {
+        return res.status(400).json({ success: false, message: 'You need to clock-in first.' });
+      }
+      schedule.attendance.push({
+        clock_in: moment(),
+      });
+      await schedule.save();
+      user.current_status = 'clocked_in';
+      await user.save();
+      return res.json({ success: true, message: 'Clocked in.' });
+    }
+
+    let lastAttendance = schedule.attendance.at(-1);
+    if (typeof lastAttendance.clock_out === 'undefined') {
+      //? if user haven't clocked-out yet.
+      if (type !== 'clock_out') {
+        return res.status(400).json({ success: false, message: 'You need to clock-out first.' });
+      } else if (!reason) {
+        //? if user want to clock-out but reason is not defined.
+        return res.status(400).json({ success: false, message: 'Clock-out reason is required.' });
+      }
+      schedule.attendance[schedule.attendance.length - 1] = {
+        clock_in: lastAttendance.clock_in,
+        clock_out: moment(),
+        out_reason: reason,
+      };
+      await schedule.save();
+      user.current_status = 'clocked_out';
+      await user.save();
+      return res.json({ success: true, message: 'Clocked out.' });
+    }
+    if (type === 'clock_out') {
+      return res.status(400).json({ success: false, message: 'You need to clock-in first.' });
+    }
+    //? Clock in again
+    schedule.attendance.push({
+      clock_in: moment(),
+    });
+    await schedule.save();
+    user.current_status = 'clocked_in';
+    await user.save();
+    res.json({ success: true, message: 'Clocked in.' });
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console

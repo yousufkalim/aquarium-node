@@ -9,10 +9,7 @@ const aquariumSchema = new mongoose.Schema(
       required: true,
     },
     address: {
-      street: String,
-      city: String,
-      country: String,
-      zip_code: String,
+      name: String,
       lat: Number,
       lng: Number,
     },
