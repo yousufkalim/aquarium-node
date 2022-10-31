@@ -271,6 +271,15 @@ exports.validateAttendance = [
     .withMessage('Invalid clock-out reason'),
 ];
 
+exports.validateTaskStatus = [
+  param('taskId').isMongoId().withMessage('Invalid task id.'),
+  check('status')
+    .notEmpty()
+    .withMessage('status is required.')
+    .isIn(['driving', 'started'])
+    .withMessage('Invalid status'),
+];
+
 exports.validateTaskCheckList = [
   param('taskId').isMongoId().withMessage('Invalid task id.'),
   check('checklist').isArray().withMessage('Check list must be in array'),
