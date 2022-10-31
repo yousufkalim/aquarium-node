@@ -4,14 +4,21 @@
 const router = require('express').Router();
 const tasks = require('../controllers/tasks');
 const { checkAdminAuth, checkAuth } = require('../middleware/checkAuth');
-const { isValidated, validateTask, validateTaskCheckList } = require('../middleware/validators');
+const {
+  isValidated,
+  validateTask,
+  validateTaskCheckList,
+  validateTaskStatus,
+} = require('../middleware/validators');
 
 // Read
 router.post('/', checkAdminAuth, validateTask, isValidated, tasks.create);
-router.post('/complete/:taskId', checkAuth, validateTaskCheckList, isValidated, tasks.completeTask);
 
-router.get('/', checkAdminAuth, tasks.getServices);
-router.get('/service', checkAuth, tasks.getNextService);
+router.put('/start/:taskId', checkAuth, validateTaskStatus, isValidated, tasks.startTask);
+router.put('/complete/:taskId', checkAuth, validateTaskCheckList, isValidated, tasks.completeTask);
+
+router.get('/', checkAdminAuth, tasks.getServices); // get all services
+router.get('/service', checkAuth, tasks.getService); // get current / next service
 
 router.put('/:taskId', validateTask, isValidated, checkAdminAuth, tasks.update);
 

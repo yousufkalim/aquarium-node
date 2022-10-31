@@ -197,15 +197,18 @@ exports.update = async (req, res) => {
   }
 };
 
-exports.getNextService = async (req, res) => {
+exports.getService = async (req, res) => {
   try {
     let { _id } = req.user;
+    let { status } = req.query;
     let date = moment().startOf('day');
     let services = await Tasks.find({
       date,
       type: 'service',
       technician: _id,
-      status: 'pending',
+      status: {
+        $in: status === 'next' ? ['pending', 'driving'] : ['started'],
+      },
     })
       .sort({ start_time: 'asc' })
       .limit(1)
@@ -234,8 +237,65 @@ exports.completeTask = async (req, res) => {
     task.checklists = req.body.checklist;
     task.status = 'completed';
     await task.save();
+    //TODO: SEND email / message to customer.
 
     res.json({ success: true, results: task, message: 'Task completed.' });
+  } catch (err) {
+    // Error handling
+    // eslint-disable-next-line no-console
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+exports.startTask = async (req, res) => {
+  try {
+    let { _id } = req.user;
+    let { taskId } = req.params;
+    let { status } = req.body;
+
+    let task = await Tasks.findOne({ _id: taskId, technician: _id });
+
+    if (!task) {
+      return res.status(404).json({ success: false, message: 'Task not found.' });
+    } else if (task.status === 'completed') {
+      return res.status(400).json({ success: false, message: 'Task already completed.' });
+    } else if (task.status === 'started') {
+      return res.status(400).json({ success: false, message: 'Task already started.' });
+    } else if (task.type !== 'service') {
+      task.status = 'started';
+      await task.save();
+      return res.json({ success: true, results: task, message: 'Task started.' });
+    }
+
+    // get tasks sorted by time.
+    let services = await Tasks.find({
+      date: task.date,
+      technician: _id,
+    }).sort({ start_time: 'asc' });
+
+    // find index of current task
+    let found = services.map((i) => i._id.toString()).indexOf(taskId);
+
+    if (found > -1) {
+      // check if service have driving period.
+      let drive = services[found - 1];
+      if (drive)
+        if (drive.type === 'drive') {
+          // Update status of driving to started.
+          await Tasks.findByIdAndUpdate(drive._id, {
+            status: status === 'driving' ? 'started' : 'completed',
+          });
+        }
+    }
+
+    //TODO: If user is starting service or driving for service send message to customer.
+    //TODO: If status is "driving" send message "technician is arriving" else send message "task started".
+
+    task.status = status;
+    await task.save();
+
+    res.json({ success: true, results: task, message: 'Task started.' });
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console
