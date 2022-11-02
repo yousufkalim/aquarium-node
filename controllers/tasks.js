@@ -159,34 +159,27 @@ exports.update = async (req, res) => {
       return res.status(409).json({ success: false, message: 'Time slot not available' });
     }
 
-    if (date.isSame(moment(task.date), 'date')) {
-      //? if task is of same date
-      task.type = type;
-      task.aquarium = aquarium;
-      task.start_time = startTime;
-      task.end_time = endTime;
-      await task.save();
-      return res.json({ same: true, message: 'Task Updated.', results: task });
-    }
-    //? pull task from previous schedule and create new schedule and push task
-    let schedule = await Schedules.findOne({ technician, date });
-    if (!schedule) {
-      schedule = new Schedules({ date, technician });
-    }
+    if (!date.isSame(moment(task.date), 'date')) {
+      //? pull task from previous schedule and create new schedule and push task
+      let schedule = await Schedules.findOne({ technician, date });
+      if (!schedule) {
+        schedule = new Schedules({ date, technician });
+      }
+      //? Remove task from previous schedule.
+      await Schedules.findByIdAndUpdate(task.schedule, { $pull: { tasks: taskId } }, { new: true });
+      schedule.tasks.push(task._id);
+      await schedule.save();
 
-    //? Remove task from previous schedule.
-    await Schedules.findByIdAndUpdate(task.schedule, { $pull: { tasks: taskId } }, { new: true });
+      task.schedule = schedule._id;
+    }
 
     //? Save required data.
     task.type = type;
     task.aquarium = aquarium;
     task.start_time = startTime;
     task.end_time = endTime;
-    task.schedule = schedule._id;
     task.date = date;
-    schedule.tasks.push(task._id);
     await task.save();
-    await schedule.save();
 
     res.json({ success: true, message: 'Task Updated. ', results: task });
   } catch (err) {
@@ -280,13 +273,11 @@ exports.startTask = async (req, res) => {
     if (found > -1) {
       // check if service have driving period.
       let drive = services[found - 1];
-      if (drive)
-        if (drive.type === 'drive') {
-          // Update status of driving to started.
-          await Tasks.findByIdAndUpdate(drive._id, {
-            status: status === 'driving' ? 'started' : 'completed',
-          });
-        }
+      if (drive && drive.type === 'drive')
+        // Update status of driving to started.
+        await Tasks.findByIdAndUpdate(drive._id, {
+          status: status === 'driving' ? 'started' : 'completed',
+        });
     }
 
     //TODO: If user is starting service or driving for service send message to customer.
