@@ -148,63 +148,42 @@ exports.attendance = async (req, res) => {
     let user = await Users.findById(_id);
     let schedule = await Schedules.findOne({ technician: _id, date });
 
-    if (!schedule) {
-      //? if no schedule found
-      if (type === 'clock_out') {
-        return res.status(400).json({ success: false, message: 'You need to clock-in first.' });
-      }
-      schedule = new Schedules({ technician: _id, date });
-      schedule.attendance.push({
-        clock_in: moment(),
-      });
-      await schedule.save();
-      user.current_status = 'clocked_in';
-      await user.save();
-      return res.json({ success: true, message: 'Clocked in.' });
-    } else if (schedule.attendance.length === 0) {
-      //? if schedule's attendance array is empty.
-      if (type === 'clock_out') {
-        return res.status(400).json({ success: false, message: 'You need to clock-in first.' });
-      }
-      schedule.attendance.push({
-        clock_in: moment(),
-      });
-      await schedule.save();
-      user.current_status = 'clocked_in';
-      await user.save();
-      return res.json({ success: true, message: 'Clocked in.' });
-    }
-
-    let lastAttendance = schedule.attendance.at(-1);
-    if (typeof lastAttendance.clock_out === 'undefined') {
-      //? if user haven't clocked-out yet.
-      if (type !== 'clock_out') {
-        return res.status(400).json({ success: false, message: 'You need to clock-out first.' });
+    if (type === 'clock_out') {
+      if (!schedule || schedule.attendance.length === 0 || schedule.attendance.at(-1).clock_out) {
+        return res.status(400).json({ success: false, message: 'You have not clocked in yet.' });
       } else if (!reason) {
-        //? if user want to clock-out but reason is not defined.
         return res.status(400).json({ success: false, message: 'Clock-out reason is required.' });
       }
-      schedule.attendance[schedule.attendance.length - 1] = {
-        clock_in: lastAttendance.clock_in,
+
+      const lastIndex = schedule.attendance.length - 1;
+      schedule.attendance[lastIndex] = {
+        clock_in: schedule.attendance[lastIndex].clock_in,
         clock_out: moment(),
         out_reason: reason,
       };
+
       await schedule.save();
       user.current_status = 'clocked_out';
       await user.save();
       return res.json({ success: true, message: 'Clocked out.' });
     }
-    if (type === 'clock_out') {
-      return res.status(400).json({ success: false, message: 'You need to clock-in first.' });
+
+    // Clock in
+    if (!schedule) {
+      schedule = new Schedules({ technician: _id, date });
     }
-    //? Clock in again
+
+    if (schedule.attendance.length > 0 && !schedule.attendance.at(-1).clock_out) {
+      return res.status(400).json({ success: false, message: 'You have already clocked in.' });
+    }
+
     schedule.attendance.push({
       clock_in: moment(),
     });
     await schedule.save();
     user.current_status = 'clocked_in';
     await user.save();
-    res.json({ success: true, message: 'Clocked in.' });
+    return res.json({ success: true, message: 'Clocked in.' });
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console
