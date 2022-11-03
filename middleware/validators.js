@@ -67,13 +67,6 @@ exports.validateAdminUpdate = [
     .isEmail()
     .withMessage('Invalid email.')
     .trim(),
-  check('phone_number')
-    .notEmpty()
-    .withMessage('Phone number is required.')
-    .isNumeric()
-    .withMessage('Phone number can only be numeric.')
-    .isLength({ min: 10, max: 10 })
-    .withMessage('Phone number must be 10 digits long'),
 ];
 
 // Login validation
