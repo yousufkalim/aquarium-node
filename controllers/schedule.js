@@ -8,7 +8,7 @@ const DATE_FORMAT = process.env.DATE_FORMAT || 'DD/MM/YYYY';
 exports.get = async (req, res) => {
   try {
     let { date } = req.query;
-    let { technicianId } = req.user;
+    let { technicianId } = req.params;
 
     date = moment(date, DATE_FORMAT, true);
 

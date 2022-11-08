@@ -33,8 +33,6 @@ const adminSchema = new Schema(
       type: String,
       default: 'uploads/logo.png',
     },
-    token: String,
-    token_expires_in: Date,
   },
   {
     timestamps: true,

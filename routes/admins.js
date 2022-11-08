@@ -5,7 +5,7 @@
 const router = require('express').Router();
 const admins = require('../controllers/admins');
 const auth = require('../controllers/auth');
-const { checkAdminAuth, checkSuperAdminAuth } = require('../middleware/checkAuth');
+const { checkAdminAuth, checkSuperAdminAuth, checkToken } = require('../middleware/checkAuth');
 const { upload } = require('../middleware/multer');
 const {
   validateAdmin,
@@ -36,7 +36,7 @@ router.put(
 router.put('/password', checkAdminAuth, changePasswordValidate, isValidated, auth.changePassword); // Change password route
 router.put('/forgot/:email', auth.forgot);
 router.put('/verify/:urlToken', auth.verifyToken);
-router.put('/password/:userId', newPasswordValidate, isValidated, auth.createPassword);
+router.put('/password-update', checkToken, newPasswordValidate, isValidated, auth.createPassword);
 router.put('/:userId', checkSuperAdminAuth, validateAdminUpdate, isValidated, admins.updateAdmin);
 
 router.delete('/:userId', checkSuperAdminAuth, admins.delete);

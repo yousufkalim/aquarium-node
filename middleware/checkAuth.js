@@ -140,3 +140,24 @@ exports.checkSuperAdminAuth = async (req, res, next) => {
     res.status(403).json({ success: false, message: 'Your session has been expired' });
   }
 };
+
+exports.checkUserId = (id) => (req, res, next) => {
+  if (req.user.role === 'user' && req.params[id] !== req.user._id) {
+    return res.status(403).json({
+      success: false,
+      message: 'You are not authorized to access this resource',
+    });
+  }
+  next();
+};
+
+exports.checkToken = (req, res, next) => {
+  try {
+    let { token } = req.body;
+    let { id } = jwt.verify(token, tokenSecret);
+    req.userId = id;
+    next();
+  } catch (err) {
+    res.status(403).json({ success: false, message: 'Token expired.' });
+  }
+};
