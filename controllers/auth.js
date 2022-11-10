@@ -7,7 +7,6 @@ const Admins = require('../models/Admins');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { sendEmail } = require('../utils/sendEmail');
-const moment = require('moment');
 const bcryptSalt = process.env.BCRYPT_SALT || 10;
 const tokenSecret = process.env.JWT_SECRET;
 const origin = process.env.ORIGIN;
@@ -148,27 +147,22 @@ exports.changePassword = async (req, res) => {
 exports.forgot = async (req, res) => {
   try {
     let { email } = req.params;
-    let user = await Admins.findOne({ email });
+    let user = await Admins.findOne({ email, active: true });
 
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Generating random password
-    let random = Math.random().toString(36).slice(-10);
+    // creating token with user_id as payload.
+    let token = jwt.sign({ id: user._id }, tokenSecret, { expiresIn: '8h' });
 
     // Sending email to user
     sendEmail({
       email,
       subject: 'Visit this link to reset your password.',
-      body: `${origin}/password/?token=${random}_${user._id}&email=true`,
+      body: `${origin}/password/?token=${token}&email=true`,
     })
       .then(async () => {
-        // If email is sent then we have to update the password in db
-        user.token = random;
-        user.token_expires_in = moment().add(1, 'week').endOf('day');
-        await user.save();
-
         // Done
         res.json({ success: true, message: 'Email sent successfully' });
       })
@@ -193,26 +187,21 @@ exports.forgot = async (req, res) => {
  */
 exports.verifyToken = async (req, res) => {
   try {
-    let { urlToken } = req.params;
+    const { urlToken } = req.params;
 
-    let [token, id] = urlToken.split('_');
+    let { id } = jwt.verify(urlToken, tokenSecret);
 
-    let user = await Admins.findById(id);
+    const user = await Admins.findById(id);
 
-    if (!user || user?.token !== token) {
-      return res.status(401).json({ success: false, message: 'Invalid token.' });
-    }
+    // eslint-disable-next-line no-underscore-dangle
+    delete user._doc.password;
 
-    if (moment(user.token_expires_in).isSameOrBefore(moment())) {
-      return res.status(401).json({ success: false, message: 'Token expired.' });
-    }
-
-    res.json({ success: true, token, user });
+    res.json({ success: true, results: user });
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console
     console.log('Error ----> ', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    res.status(500).json({ success: false, message: 'Token expired.' });
   }
 };
 
@@ -223,7 +212,6 @@ exports.verifyToken = async (req, res) => {
  */
 exports.createPassword = async (req, res) => {
   try {
-    let { userId } = req.params;
     let { password, confirmPassword } = req.body;
 
     if (password !== confirmPassword) {
@@ -233,7 +221,7 @@ exports.createPassword = async (req, res) => {
       });
     }
 
-    let user = await Admins.findById(userId);
+    let user = await Admins.findById(req.userId);
 
     // Generate token
     user.password = bcrypt.hashSync(password, parseInt(bcryptSalt));

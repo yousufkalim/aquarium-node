@@ -5,7 +5,7 @@
  */
 const router = require('express').Router();
 const users = require('../controllers/users');
-const { checkAuth, checkAdminAuth } = require('../middleware/checkAuth');
+const { checkAuth, checkAdminAuth, checkUserId } = require('../middleware/checkAuth');
 const { upload } = require('../middleware/multer');
 const { validateUser, isValidated, validateAttendance } = require('../middleware/validators');
 
@@ -31,6 +31,7 @@ router.get('/:userId', checkAuth, users.getById); // Get one user by it's id
 router.put(
   '/:userId',
   checkAuth,
+  checkUserId('userId'),
   upload.single('profile_pic'),
   validateUser,
   isValidated,

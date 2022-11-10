@@ -11,6 +11,9 @@ require('./database');
 // Middleware
 require('./middleware/common')(app);
 
+// Cronjob to checkout users
+require('./utils/clockOut');
+
 // API Routes
 app.use('/api', require('./routes'));
 

@@ -42,14 +42,23 @@ exports.update = async (req, res) => {
   try {
     let { itemId } = req.params;
 
+    let { description, attachment } = req.body;
+
+    if (description) {
+      req.body.attachment = null;
+    } else if (attachment) {
+      req.body.description = null;
+    }
+
     if (req.file) {
       req.body.attachment = {
         url: req.file.path,
         type: req.file.mimetype.split('/')[0],
       };
+      req.body.description = null;
     }
 
-    let checklist = await Checklists.findByIdAndUpdate(itemId, { ...req.body }, { new: true });
+    let checklist = await Checklists.findByIdAndUpdate(itemId, req.body, { new: true });
     res.json({ success: true, results: checklist, message: 'Checklist item updated.' });
   } catch (err) {
     // Error handling
