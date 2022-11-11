@@ -109,6 +109,11 @@ exports.getServices = async (req, res) => {
     let services = await Tasks.find({
       type: 'service',
       admin: admin.role === 'admin' ? admin._id : undefined,
+    }).populate({
+      path: 'aquarium',
+      populate: {
+        path: 'client',
+      },
     });
     res.json({ success: true, results: services });
   } catch (err) {
@@ -205,7 +210,12 @@ exports.getService = async (req, res) => {
     })
       .sort({ start_time: 'asc' })
       .limit(1)
-      .populate('aquarium');
+      .populate({
+        path: 'aquarium',
+        populate: {
+          path: 'client',
+        },
+      });
     res.json({ success: true, results: services[0] ?? null });
   } catch (err) {
     // Error handling

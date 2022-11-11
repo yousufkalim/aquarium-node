@@ -18,7 +18,12 @@ exports.get = async (req, res) => {
 
     let schedule = await Schedules.findOne({ technician: technicianId, date }).populate({
       path: 'tasks',
-      populate: { path: 'aquarium' },
+      populate: {
+        path: 'aquarium',
+        populate: {
+          path: 'client',
+        },
+      },
     });
 
     if (!schedule) {
