@@ -29,10 +29,7 @@ const adminSchema = new Schema(
       default: true,
     },
     phone_number: String,
-    profile_pic: {
-      type: String,
-      default: 'uploads/logo.png',
-    },
+    profile_pic: String,
   },
   {
     timestamps: true,
