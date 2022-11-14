@@ -310,3 +310,23 @@ exports.startTask = async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
+
+exports.getTaskById = async (req, res) => {
+  try {
+    let task = await Tasks.findById(req.params.taskId).populate([
+      { path: 'technician', select: '-otp' },
+      {
+        path: 'aquarium',
+        populate: {
+          path: 'client',
+        },
+      },
+    ]);
+    res.json({ success: true, results: task });
+  } catch (err) {
+    // Error handling
+    // eslint-disable-next-line no-console
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};

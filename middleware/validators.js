@@ -280,6 +280,10 @@ exports.validateTaskCheckList = [
   check('checklist.*.status').notEmpty().withMessage('Checklist status is required'),
 ];
 
+exports.validateTaskId = [
+  param('taskId').isMongoId().withMessage('Invalid task id.'), //
+];
+
 /*
 ======================
 Result
