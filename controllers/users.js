@@ -165,7 +165,7 @@ exports.attendance = async (req, res) => {
       await schedule.save();
       user.current_status = 'clocked_out';
       await user.save();
-      return res.json({ success: true, message: 'Clocked out.' });
+      return res.json({ success: true, message: 'Clocked out.', user });
     }
 
     // Clock in
@@ -183,7 +183,7 @@ exports.attendance = async (req, res) => {
     await schedule.save();
     user.current_status = 'clocked_in';
     await user.save();
-    return res.json({ success: true, message: 'Clocked in.' });
+    return res.json({ success: true, message: 'Clocked in.', user });
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console
