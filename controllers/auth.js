@@ -160,7 +160,7 @@ exports.forgot = async (req, res) => {
     sendEmail({
       email,
       subject: 'Visit this link to reset your password.',
-      body: `${origin}/password/?token=${token}&email=true`,
+      body: `${origin}/password/${token}`,
     })
       .then(async () => {
         // Done
@@ -201,7 +201,7 @@ exports.verifyToken = async (req, res) => {
     // Error handling
     // eslint-disable-next-line no-console
     console.log('Error ----> ', err);
-    res.status(500).json({ success: false, message: 'Token expired.' });
+    res.status(403).json({ success: false, message: 'Token expired.' });
   }
 };
 
