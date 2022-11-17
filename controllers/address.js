@@ -18,7 +18,7 @@ exports.address = async (req, res) => {
 
     places = places.map((item) => {
       return {
-        name: item.name,
+        name: item.formatted_address,
         ...item.geometry.location,
       };
     });
@@ -31,10 +31,3 @@ exports.address = async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
-
-// {street: String,
-//       city: String,
-//       country: String,
-//       zip_code: String,
-//       lat: Number,
-//       lng: Number,}

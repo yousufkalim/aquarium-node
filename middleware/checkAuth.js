@@ -39,7 +39,7 @@ exports.checkAuth = async (req, res, next) => {
       });
     }
 
-    req.user = user;
+    req.user = userChk;
 
     // If user authenticated
     res.set(
@@ -81,7 +81,7 @@ exports.checkAdminAuth = async (req, res, next) => {
       });
     }
 
-    req.user = user;
+    req.user = userChk;
     req.token = token;
 
     // If user authenticated
@@ -124,7 +124,7 @@ exports.checkSuperAdminAuth = async (req, res, next) => {
       });
     }
 
-    req.user = user;
+    req.user = userChk;
     req.token = token;
 
     // If user authenticated

@@ -1,8 +1,10 @@
 /**
  * All the validation
  * @author Yousuf Kalim
+ * @author Najam Ul Saqib
  */
 const { check, validationResult, param } = require('express-validator');
+const fs = require('fs');
 const moment = require('moment');
 const DATE_FORMAT = process.env.DATE_FORMAT || 'DD/MM/YYYY';
 
@@ -20,7 +22,7 @@ exports.validateUser = [
   check('phone_number')
     .notEmpty()
     .withMessage('Phone number is required.')
-    .isNumeric()
+    .isNumeric({ no_symbols: true })
     .withMessage('Phone number can only be numeric.')
     .isLength({ min: 10, max: 10 })
     .withMessage('Phone number must be 10 digits long'),
@@ -84,13 +86,13 @@ exports.validateTechnicianLogin = [
   check('phone_number')
     .notEmpty()
     .withMessage('Phone number is required.')
-    .isNumeric()
+    .isNumeric({ no_symbols: true })
     .withMessage('Phone number can only be numeric.')
     .isLength({ min: 10, max: 10 })
     .withMessage('Phone number must be 10 digits long'),
   check('otp')
     .optional()
-    .isNumeric()
+    .isNumeric({ no_symbols: true })
     .withMessage('OTP can only be numeric.')
     .isLength({ min: 4, max: 4 })
     .withMessage('OTP must be 4 characters.'),
@@ -156,7 +158,7 @@ exports.validateProduct = [
   check('price')
     .notEmpty()
     .withMessage('Price is required.')
-    .isNumeric()
+    .isNumeric({ no_symbols: true })
     .withMessage('Price can only be numeric.'),
 ];
 exports.validateClient = [
@@ -165,7 +167,7 @@ exports.validateClient = [
   check('phone_number')
     .notEmpty()
     .withMessage('Phone number is required.')
-    .isNumeric()
+    .isNumeric({ no_symbols: true })
     .withMessage('Phone number can only be numeric.')
     .isLength({ min: 10, max: 10 })
     .withMessage('Phone number must be 10 digits long'),
@@ -249,7 +251,10 @@ exports.validateTask = [
 
       return true;
     }),
-  check('repeat').optional().isNumeric().withMessage('Repeat must be in numeric.'),
+  check('repeat')
+    .optional()
+    .isNumeric({ no_symbols: true })
+    .withMessage('Repeat must be in numeric.'),
 ];
 
 exports.validateAttendance = [
@@ -299,7 +304,13 @@ Result
 exports.isValidated = (req, res, next) => {
   const errors = validationResult(req); // Validating the request by previous middleware's strategy
   if (!errors.isEmpty()) {
-    // On error
+    // On error remove files if any
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
+    if (req.files) {
+      req.files.map((f) => fs.unlinkSync(f.path));
+    }
     res.status(400).send({ success: false, message: errors.array()[0].msg }); // Sending first error to the client from array of errors
   } else {
     // Validated successfully
