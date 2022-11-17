@@ -16,15 +16,17 @@ exports.get = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid date.' });
     }
 
-    let schedule = await Schedules.findOne({ technician: technicianId, date }).populate({
-      path: 'tasks',
-      populate: {
-        path: 'aquarium',
+    let schedule = await Schedules.findOne({ technician: technicianId, date })
+      .populate({
+        path: 'tasks',
         populate: {
-          path: 'client',
+          path: 'aquarium',
+          populate: {
+            path: 'client',
+          },
         },
-      },
-    });
+      })
+      .populate('technician');
 
     if (!schedule) {
       return res.json({
