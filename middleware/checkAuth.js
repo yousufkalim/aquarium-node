@@ -142,7 +142,8 @@ exports.checkSuperAdminAuth = async (req, res, next) => {
 };
 
 exports.checkUserId = (id) => (req, res, next) => {
-  if (req.user.role === 'user' && req.params[id] !== req.user._id) {
+  // eslint-disable-next-line eqeqeq
+  if (req.user.role === 'user' && req.params[id] != req.user._id) {
     return res.status(403).json({
       success: false,
       message: 'You are not authorized to access this resource',
