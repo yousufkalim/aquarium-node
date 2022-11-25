@@ -6,7 +6,7 @@ const taskSchema = new mongoose.Schema(
   {
     type: {
       type: String,
-      enum: ['service', 'loadup', 'unload', 'drive', 'lunch', 'outOfOffice', 'endOfShift'],
+      enum: ['service', 'loadup', 'unload', 'drive', 'lunch', 'break', 'outOfOffice', 'endOfShift'],
       required: true,
     },
     status: {
