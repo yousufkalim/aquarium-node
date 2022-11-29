@@ -2,6 +2,7 @@
  * @author Najam Ul Saqib
  */
 const Schedules = require('../models/Schedules');
+const Users = require('../models/Users');
 const moment = require('moment');
 const DATE_FORMAT = process.env.DATE_FORMAT;
 
@@ -29,9 +30,14 @@ exports.get = async (req, res) => {
       .populate('technician');
 
     if (!schedule) {
+      let tech = await Users.findOne({ _id: technicianId });
+
       return res.json({
         success: true,
         message: 'No schedule found.',
+        results: {
+          technician: tech,
+        },
       });
     }
 
