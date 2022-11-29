@@ -34,7 +34,7 @@ exports.login = async (req, res) => {
     }
 
     if (user.otp !== otp) {
-      if (process.env.NODE_ENV !== 'dev')
+      if (!['dev', 'QA'].includes(process.env.NODE_ENV))
         return res.status(400).json({ success: false, message: 'Invalid OTP.' });
     }
 
