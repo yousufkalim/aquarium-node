@@ -5,7 +5,7 @@ const Schedules = require('../models/Schedules');
 const Tasks = require('../models/Tasks');
 const moment = require('moment');
 
-const DATE_FORMAT = process.env.DATE_FORMAT || 'DD/MM/YYYY';
+const DATE_FORMAT = process.env.DATE_FORMAT;
 
 exports.create = async (req, res) => {
   try {

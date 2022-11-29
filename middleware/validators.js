@@ -6,7 +6,7 @@
 const { check, validationResult, param } = require('express-validator');
 const fs = require('fs');
 const moment = require('moment');
-const DATE_FORMAT = process.env.DATE_FORMAT || 'DD/MM/YYYY';
+const DATE_FORMAT = process.env.DATE_FORMAT;
 
 /*
 ====================
