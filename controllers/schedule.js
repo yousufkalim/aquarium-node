@@ -4,7 +4,7 @@
 const Schedules = require('../models/Schedules');
 const Users = require('../models/Users');
 const moment = require('moment');
-const DATE_FORMAT = process.env.DATE_FORMAT || 'DD/MM/YYYY';
+const DATE_FORMAT = process.env.DATE_FORMAT;
 
 exports.get = async (req, res) => {
   try {
