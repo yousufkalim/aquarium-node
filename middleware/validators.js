@@ -243,6 +243,12 @@ exports.validateTask = [
         DATE_FORMAT + ' ' + 'HH:mm a',
         true,
       );
+
+      let current = moment();
+      current = current.isSameOrAfter(start);
+      if (current) {
+        throw new Error('Start time should not be a past time.');
+      }
       let end = moment(req.body.date + ' ' + value, DATE_FORMAT + ' ' + 'HH:mm a', true);
       result = start.isSameOrAfter(end);
       if (result) {
