@@ -2,6 +2,7 @@
  * @author Najam Ul Saqib
  */
 const Schedules = require('../models/Schedules');
+const Aquariums = require('../models/Aquariums');
 const Tasks = require('../models/Tasks');
 const moment = require('moment');
 
@@ -11,13 +12,33 @@ exports.create = async (req, res) => {
   try {
     let { _id } = req.user;
     let { date, start_time, end_time, technician, type, aquarium, repeat } = req.body;
+
     //? Convert ${repeat} to number if it exists else 1
     repeat = repeat ? +repeat : 1;
 
+    date = moment(date, DATE_FORMAT, true);
+
+    // eslint-disable-next-line no-underscore-dangle
+    let _aquarium = await Aquariums.findById(aquarium);
+
     //? save created docs
     let createdDocs = [];
+    let service = {
+      aquarium: _aquarium,
+      start_time: moment(
+        // eslint-disable-next-line camelcase
+        date.format(DATE_FORMAT) + ' ' + start_time.split(' ').join(':01 '), //? adding one second to avoid conflict
+        DATE_FORMAT + ' ' + 'HH:mm:ss a',
+        true,
+      ),
+      end_time: moment(
+        // eslint-disable-next-line camelcase
+        date.format(DATE_FORMAT) + ' ' + end_time,
+        DATE_FORMAT + ' ' + 'HH:mm a',
+        true,
+      ),
+    };
 
-    date = moment(date, DATE_FORMAT, true);
     //? Repeat task creation for ${repeat} times.
     for (let index = 0; index < repeat; index++) {
       //? create date object for service
@@ -63,18 +84,23 @@ exports.create = async (req, res) => {
           end_time: endTime,
           admin: _id,
         });
-        createdDocs.push(task);
+        createdDocs.push({ title: `Week ${index + 1}`, success: true, date });
         schedule.tasks.push(task._id);
         await schedule.save();
+      } else {
+        createdDocs.push({ title: `Week ${index + 1}`, success: false, date });
       }
       date = date.add(1, 'week'); //? Add 1 week in date
     }
 
-    if (!createdDocs.length) {
-      return res.status(409).json({ success: false, message: 'Time slot not available' });
-    }
-
-    res.json({ success: true, message: 'Task(s) created.', results: createdDocs });
+    res.json({
+      success: true,
+      // message: 'Task(s) created.',
+      results: {
+        service,
+        repeat: createdDocs,
+      },
+    });
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console
