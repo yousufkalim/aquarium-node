@@ -19,14 +19,19 @@ const origin = process.env.ORIGIN;
 exports.login = async (req, res) => {
   try {
     // Getting email and password
-    const { phone_number, otp } = req.body;
+    const { phone_number, otp, fcmToken } = req.body;
 
     // Getting user from db
-    const user = await Users.findOne({
-      // eslint-disable-next-line camelcase
-      phone_number,
-      active: true,
-    });
+    const user = await Users.findOneAndUpdate(
+      {
+        // eslint-disable-next-line camelcase
+        phone_number,
+        active: true,
+      },
+      {
+        fcmToken,
+      },
+    );
 
     if (!user) {
       // If user not found
@@ -41,6 +46,8 @@ exports.login = async (req, res) => {
     // Creating payload with user object
     // eslint-disable-next-line no-underscore-dangle
     delete user._doc.otp;
+    // eslint-disable-next-line no-underscore-dangle
+    delete user._doc.fcmToken;
     const payload = { user };
 
     // Generating token

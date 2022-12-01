@@ -16,6 +16,7 @@ router.use('/checklist', require('./checklist')); // All the auth routes
 router.use('/products', require('./products')); // All the auth routes
 router.use('/clients', require('./clients')); // All the auth routes
 router.use('/schedule', require('./schedule')); // All the auth routes
+router.use('/notifications', require('./notifications'));
 router.get('/address', address);
 
 // Export
