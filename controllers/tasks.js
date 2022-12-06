@@ -88,7 +88,7 @@ exports.create = async (req, res) => {
           end_time: endTime,
           admin: _id,
         });
-        createdDocs.push({ title: `Week ${index + 1}`, success: true, date });
+        createdDocs.push({ title: `Week ${index + 1}`, success: true, date: date.toString() });
         schedule.tasks.push(task._id);
         await schedule.save();
         await Notifications.create({
@@ -105,7 +105,7 @@ exports.create = async (req, res) => {
             );
         });
       } else {
-        createdDocs.push({ title: `Week ${index + 1}`, success: false, date });
+        createdDocs.push({ title: `Week ${index + 1}`, success: false, date: date.toString() });
       }
       date = date.add(1, 'week'); //? Add 1 week in date
     }
