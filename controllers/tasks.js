@@ -3,8 +3,11 @@
  */
 const Schedules = require('../models/Schedules');
 const Aquariums = require('../models/Aquariums');
+const Users = require('../models/Users');
+const Notifications = require('../models/Notifications');
 const Tasks = require('../models/Tasks');
 const moment = require('moment');
+const { sendNotification } = require('../utils/sendNotification');
 
 const DATE_FORMAT = process.env.DATE_FORMAT;
 
@@ -20,6 +23,7 @@ exports.create = async (req, res) => {
 
     // eslint-disable-next-line no-underscore-dangle
     let _aquarium = await Aquariums.findById(aquarium).populate('client');
+    const user = await Users.findById(technician);
 
     //? save created docs
     let createdDocs = [];
@@ -84,11 +88,24 @@ exports.create = async (req, res) => {
           end_time: endTime,
           admin: _id,
         });
-        createdDocs.push({ title: `Week ${index + 1}`, success: true, date });
+        createdDocs.push({ title: `Week ${index + 1}`, success: true, date: date.toString() });
         schedule.tasks.push(task._id);
         await schedule.save();
+        await Notifications.create({
+          technician,
+          // ${_aquarium.client.first_name}'s
+          text: `Service for ${_aquarium.tank_details?.size} has been added to you agenda.`,
+          task: task._id,
+        }).then(() => {
+          if (user.fcmToken)
+            sendNotification(
+              user.fcmToken,
+              'Aquarium',
+              `Service for ${_aquarium.tank_details?.size} has been added to you agenda.`,
+            );
+        });
       } else {
-        createdDocs.push({ title: `Week ${index + 1}`, success: false, date });
+        createdDocs.push({ title: `Week ${index + 1}`, success: false, date: date.toString() });
       }
       date = date.add(1, 'week'); //? Add 1 week in date
     }
@@ -159,6 +176,9 @@ exports.update = async (req, res) => {
     let { date, technician, start_time, end_time, type, aquarium } = req.body;
     date = moment(date, DATE_FORMAT, true);
     let task = await Tasks.findById(taskId);
+    // eslint-disable-next-line no-underscore-dangle
+    let _aquarium = await Aquariums.findById(aquarium);
+    const user = await Users.findById(technician);
 
     if (!task) {
       return res.status(404).json({ success: false, message: 'Task not found' });
@@ -214,6 +234,19 @@ exports.update = async (req, res) => {
     task.end_time = endTime;
     task.date = date;
     await task.save();
+    await Notifications.create({
+      technician,
+      // ${_aquarium.client.first_name}'s
+      text: `Service for ${_aquarium.tank_details?.size} has been updated in your agenda.`,
+      task: task._id,
+    }).then(() => {
+      if (user.fcmToken)
+        sendNotification(
+          user.fcmToken,
+          'Aquarium',
+          `Service for ${_aquarium.tank_details?.size} has been updated in your agenda.`,
+        );
+    });
 
     res.json({ success: true, message: 'Task Updated. ', results: task });
   } catch (err) {
