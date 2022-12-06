@@ -198,7 +198,7 @@ exports.validateTask = [
   check('type')
     .notEmpty()
     .withMessage('Type is required.')
-    .isIn(['service', 'loadup', 'unload', 'drive', 'lunch', 'outOfOffice', 'endOfShift'])
+    .isIn(['service', 'loadup', 'unload', 'drive', 'lunch', 'break', 'outOfOffice', 'endOfShift'])
     .withMessage('Invalid type.'),
   check('date')
     .notEmpty()

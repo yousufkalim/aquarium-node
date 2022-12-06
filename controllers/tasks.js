@@ -22,7 +22,7 @@ exports.create = async (req, res) => {
     date = moment(date, DATE_FORMAT, true);
 
     // eslint-disable-next-line no-underscore-dangle
-    let _aquarium = await Aquariums.findById(aquarium);
+    let _aquarium = await Aquariums.findById(aquarium).populate('client');
     const user = await Users.findById(technician);
 
     //? save created docs
