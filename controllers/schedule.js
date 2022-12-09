@@ -49,3 +49,39 @@ exports.get = async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
+
+exports.getData = async (req, res) => {
+  try {
+    let { _id } = req.user;
+    let date = moment().startOf('day');
+    let schedule = await Schedules.findOne({ technician: _id, date })
+      .populate({
+        path: 'tasks',
+        populate: {
+          path: 'aquarium',
+          populate: {
+            path: 'client',
+          },
+        },
+      })
+      .populate('technician');
+    if (!schedule) {
+      return res.json({ success: true, results: { gallons: 0, steps: 0 } });
+    }
+    let results = schedule.tasks.reduce(
+      (value, { aquarium }) => ({
+        gallons: aquarium?.tank_details.size.split(' ')[0]
+          ? +aquarium?.tank_details.size.split(' ')[0] + value.gallons
+          : value.gallons,
+        steps: value.steps + 1,
+      }),
+      { gallons: 0, steps: 0 },
+    );
+    res.json({ success: true, results });
+  } catch (err) {
+    // Error handling
+    // eslint-disable-next-line no-console
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
