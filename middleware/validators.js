@@ -318,7 +318,7 @@ exports.validateDates = [
         throw new Error('Invalid date.');
       }
 
-      result = date.isAfter(moment(req.query.from, DATE_FORMAT, true), 'day');
+      result = date.isSameOrAfter(moment(req.query.from, DATE_FORMAT, true), 'day');
       if (!result) {
         throw new Error('Invalid date range.');
       }
