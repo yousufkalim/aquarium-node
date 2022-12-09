@@ -35,7 +35,10 @@ exports.login = async (req, res) => {
 
     if (!user) {
       // If user not found
-      return res.status(404).json({ success: false, message: 'User not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'No user identified, please reach out to you administrator.',
+      });
     }
 
     if (user.otp !== otp) {
@@ -78,7 +81,10 @@ exports.sendOtp = async (req, res) => {
 
     if (!user) {
       // If user not found
-      return res.status(404).json({ success: false, message: 'User not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'No user identified, please reach out to you administrator.',
+      });
     }
 
     let otp = Math.random().toString(10).slice(-4);
@@ -115,7 +121,10 @@ exports.changePassword = async (req, res) => {
     let user = await Admins.findById(_id);
 
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'No user identified, please reach out to you administrator.',
+      });
     }
 
     let isMatched = bcrypt.compareSync(oldPassword, user.password);
@@ -157,7 +166,10 @@ exports.forgot = async (req, res) => {
     let user = await Admins.findOne({ email, active: true });
 
     if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'No user identified, please reach out to you administrator.',
+      });
     }
 
     // creating token with user_id as payload.

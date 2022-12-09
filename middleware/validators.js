@@ -3,7 +3,7 @@
  * @author Yousuf Kalim
  * @author Najam Ul Saqib
  */
-const { check, validationResult, param } = require('express-validator');
+const { check, validationResult, param, query } = require('express-validator');
 const fs = require('fs');
 const moment = require('moment');
 const DATE_FORMAT = process.env.DATE_FORMAT;
@@ -291,6 +291,40 @@ exports.validateTaskCheckList = [
 
 exports.validateTaskId = [
   param('taskId').isMongoId().withMessage('Invalid task id.'), //
+];
+
+exports.validateDates = [
+  query('from')
+    .notEmpty()
+    .withMessage('')
+    .custom((value) => {
+      let date = moment(value, DATE_FORMAT, true);
+
+      let result = date.isValid();
+      if (!result) {
+        throw new Error('Invalid date.');
+      }
+
+      return true;
+    }),
+  query('to')
+    .notEmpty()
+    .withMessage('')
+    .custom((value, { req }) => {
+      let date = moment(value, DATE_FORMAT, true);
+
+      let result = date.isValid();
+      if (!result) {
+        throw new Error('Invalid date.');
+      }
+
+      result = date.isAfter(moment(req.query.from, DATE_FORMAT, true), 'day');
+      if (!result) {
+        throw new Error('Invalid date range.');
+      }
+
+      return true;
+    }),
 ];
 
 /*
