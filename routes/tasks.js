@@ -10,6 +10,7 @@ const {
   validateTaskCheckList,
   validateTaskStatus,
   validateTaskId,
+  validateDates,
 } = require('../middleware/validators');
 
 // Read
@@ -20,6 +21,7 @@ router.put('/complete/:taskId', checkAuth, validateTaskCheckList, isValidated, t
 
 router.get('/', checkAdminAuth, tasks.getServices); // get all services
 router.get('/service', checkAuth, tasks.getService); // get current / next service
+router.get('/report', checkAuth, validateDates, isValidated, tasks.getServicesInDateRange); // get tasks in a date range
 router.get('/:taskId', checkAuth, validateTaskId, isValidated, tasks.getTaskById); // get task by id
 
 router.put('/:taskId', validateTask, isValidated, checkAdminAuth, tasks.update);

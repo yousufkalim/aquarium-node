@@ -389,3 +389,34 @@ exports.getTaskById = async (req, res) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
+
+exports.getServicesInDateRange = async (req, res) => {
+  try {
+    let user = req.user;
+    let { from, to } = req.query;
+    from = moment(from, DATE_FORMAT, true);
+    to = moment(to, DATE_FORMAT, true);
+    let services = await Tasks.find({
+      type: 'service',
+      technician: user._id,
+      date: {
+        $gte: from,
+        $lte: to,
+      },
+    }).populate([
+      { path: 'technician', select: '-otp' },
+      {
+        path: 'aquarium',
+        populate: {
+          path: 'client',
+        },
+      },
+    ]);
+    res.json({ success: true, results: services });
+  } catch (err) {
+    // Error handling
+    // eslint-disable-next-line no-console
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
