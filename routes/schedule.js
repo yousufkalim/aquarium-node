@@ -8,6 +8,7 @@ const { checkAuth, checkUserId } = require('../middleware/checkAuth');
 router.use('/tasks', require('./tasks'));
 
 // Read
+router.get('/data', checkAuth, schedule.getData);
 router.get('/:technicianId', checkAuth, checkUserId('technicianId'), schedule.get);
 
 // Export
