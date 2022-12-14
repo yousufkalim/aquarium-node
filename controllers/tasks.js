@@ -91,19 +91,21 @@ exports.create = async (req, res) => {
         createdDocs.push({ title: `Week ${index + 1}`, success: true, date: date.toString() });
         schedule.tasks.push(task._id);
         await schedule.save();
-        await Notifications.create({
-          technician,
-          // ${_aquarium.client.first_name}'s
-          text: `Service for ${_aquarium.tank_details?.size} has been added to you agenda.`,
-          task: task._id,
-        }).then(() => {
-          if (user.fcmToken)
-            sendNotification(
-              user.fcmToken,
-              'Aquarium',
-              `Service for ${_aquarium.tank_details?.size} has been added to you agenda.`,
-            );
-        });
+        if (type === 'service') {
+          await Notifications.create({
+            technician,
+            // ${_aquarium.client.first_name}'s
+            text: `Service for ${_aquarium.tank_details?.size} has been added to you agenda.`,
+            task: task._id,
+          }).then(() => {
+            if (user.fcmToken)
+              sendNotification(
+                user.fcmToken,
+                'Aquarium',
+                `Service for ${_aquarium.tank_details?.size} has been added to you agenda.`,
+              );
+          });
+        }
       } else {
         createdDocs.push({ title: `Week ${index + 1}`, success: false, date: date.toString() });
       }
