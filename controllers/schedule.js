@@ -53,7 +53,7 @@ exports.get = async (req, res) => {
 exports.getData = async (req, res) => {
   try {
     let { _id } = req.user;
-    let date = moment().startOf('day');
+    let date = moment().subtract(2, 'day').startOf('day');
     let schedule = await Schedules.findOne({ technician: _id, date })
       .populate({
         path: 'tasks',
@@ -69,12 +69,18 @@ exports.getData = async (req, res) => {
       return res.json({ success: true, results: { gallons: 0, steps: 0 } });
     }
     let results = schedule.tasks.reduce(
-      (value, { aquarium }) => ({
-        gallons: aquarium?.tank_details.size.split(' ')[0]
-          ? +aquarium?.tank_details.size.split(' ')[0] + value.gallons
-          : value.gallons,
-        steps: value.steps + 1,
-      }),
+      //? Counting gallons and steps only for service.
+      (value, task) => {
+        let gallons = task?.aquarium?.tank_details.size.split(' ')[0];
+        if (task?.type === 'service') {
+          return {
+            gallons: gallons ? +gallons + value.gallons : value.gallons,
+            steps: value.steps + 1,
+          };
+        } else {
+          return value;
+        }
+      },
       { gallons: 0, steps: 0 },
     );
     res.json({ success: true, results });
