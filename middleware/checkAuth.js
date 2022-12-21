@@ -32,7 +32,7 @@ exports.checkAuth = async (req, res, next) => {
       userChk = await Admins.findById(user._id);
     }
 
-    if (!userChk) {
+    if (!userChk || !userChk.active) {
       return res.status(403).json({
         success: false,
         message: 'You are not authorized to access this resource',

@@ -37,7 +37,7 @@ exports.login = async (req, res) => {
       // If user not found
       return res.status(404).json({
         success: false,
-        message: 'No user identified, please reach out to you administrator.',
+        message: 'No user identified, please reach out to your administrator.',
       });
     }
 
@@ -83,7 +83,7 @@ exports.sendOtp = async (req, res) => {
       // If user not found
       return res.status(404).json({
         success: false,
-        message: 'No user identified, please reach out to you administrator.',
+        message: 'No user identified, please reach out to your administrator.',
       });
     }
 
@@ -123,7 +123,7 @@ exports.changePassword = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'No user identified, please reach out to you administrator.',
+        message: 'No user identified, please reach out to your administrator.',
       });
     }
 
@@ -168,7 +168,7 @@ exports.forgot = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'No user identified, please reach out to you administrator.',
+        message: 'No user identified, please reach out to your administrator.',
       });
     }
 
