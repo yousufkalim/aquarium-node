@@ -247,10 +247,15 @@ exports.validateTask = [
       if (moment().isSameOrAfter(start)) {
         throw new Error('Start time should not be a past time.');
       }
+
       let end = moment(req.body.date + ' ' + value, DATE_FORMAT + ' ' + 'HH:mm a', true);
       result = start.isSameOrAfter(end);
       if (result) {
         throw new Error('End time should be after start time.');
+      }
+
+      if (moment(end).diff(moment(start), 'minute') < 30) {
+        throw new Error('Minimum task time must be 30 minutes.');
       }
 
       return true;
