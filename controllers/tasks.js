@@ -155,7 +155,7 @@ exports.getServices = async (req, res) => {
       type: 'service',
       admin: admin.role === 'admin' ? admin._id : undefined,
     }).populate([
-      { path: 'technician', select: '-otp' },
+      { path: 'technician', select: '-otp -fcmToken' },
       {
         path: 'aquarium',
         populate: {
@@ -275,7 +275,39 @@ exports.getService = async (req, res) => {
       .sort({ start_time: 'asc' })
       .limit(1)
       .populate([
-        { path: 'technician', select: '-otp' },
+        { path: 'technician', select: '-otp -fcmToken' },
+        {
+          path: 'aquarium',
+          populate: {
+            path: 'client',
+          },
+        },
+      ]);
+    res.json({ success: true, results: services[0] ?? null });
+  } catch (err) {
+    // Error handling
+    // eslint-disable-next-line no-console
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+exports.getLoadup = async (req, res) => {
+  try {
+    let { _id } = req.user;
+    let date = moment().startOf('day');
+    let services = await Tasks.find({
+      date,
+      // type: 'loadup',
+      technician: _id,
+      status: {
+        $in: ['pending', 'started'],
+      },
+    })
+      .sort({ start_time: 'asc' })
+      .limit(1)
+      .populate([
+        { path: 'technician', select: '-otp -fcmToken' },
         {
           path: 'aquarium',
           populate: {
@@ -375,7 +407,7 @@ exports.startTask = async (req, res) => {
 exports.getTaskById = async (req, res) => {
   try {
     let task = await Tasks.findById(req.params.taskId).populate([
-      { path: 'technician', select: '-otp' },
+      { path: 'technician', select: '-otp -fcmToken' },
       {
         path: 'aquarium',
         populate: {
@@ -406,7 +438,7 @@ exports.getServicesInDateRange = async (req, res) => {
         $lte: to,
       },
     }).populate([
-      { path: 'technician', select: '-otp' },
+      { path: 'technician', select: '-otp -fcmToken' },
       {
         path: 'aquarium',
         populate: {
