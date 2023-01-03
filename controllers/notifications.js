@@ -9,7 +9,7 @@ const Notifications = require('../models/Notifications');
 exports.get = async (req, res) => {
   try {
     const { _id } = req.user;
-    let notifications = await Notifications.find({ technician: _id });
+    let notifications = await Notifications.find({ technician: _id }).sort('-createdAt');
 
     res.json({ success: true, results: notifications });
   } catch (err) {
