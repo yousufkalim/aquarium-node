@@ -2,10 +2,11 @@ const cron = require('node-cron');
 const moment = require('moment');
 const Schedules = require('../models/Schedules');
 const Users = require('../models/Users');
+const Notifications = require('../models/Notifications');
 
 //* Run this task on every midnight
 cron.schedule('0 0 0 * * *', async () => {
-  const date = moment('2022-10-26T07:00:00.000+00:00').subtract(1, 'day');
+  const date = moment().subtract(1, 'day');
   //? Clock out all user object
   await Users.updateMany({ current_status: 'clocked_in' }, { current_status: 'clocked_out' });
   //? Clock out from schedule
@@ -37,4 +38,10 @@ cron.schedule('0 0 0 * * *', async () => {
       },
     },
   );
+
+  //* Cron-Job to delete 3 weeks ago notifications.
+  const threeWeeKsAgoDate = moment().subtract(3, 'week').startOf('day');
+  Notifications.deleteMany({
+    createdAt: { $lte: threeWeeKsAgoDate },
+  });
 });
