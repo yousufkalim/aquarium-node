@@ -53,7 +53,7 @@ exports.get = async (req, res) => {
 exports.getData = async (req, res) => {
   try {
     let { _id } = req.user;
-    let date = moment().subtract(2, 'day').startOf('day');
+    let date = moment().startOf('day');
     let schedule = await Schedules.findOne({ technician: _id, date })
       .populate({
         path: 'tasks',
