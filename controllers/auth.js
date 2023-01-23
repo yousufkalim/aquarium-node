@@ -43,8 +43,9 @@ exports.login = async (req, res) => {
 
     if (user.otp !== otp) {
       //? Dummy otp for Dev, QA and staging server.
-      if (process.env.NODE_ENV !== 'prod' && otp !== '1122')
+      if (process.env.NODE_ENV === 'prod' || (process.env.NODE_ENV !== 'prod' && otp !== '1122')) {
         return res.status(400).json({ success: false, message: 'Invalid OTP.' });
+      }
     }
 
     // Creating payload with user object
