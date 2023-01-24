@@ -298,7 +298,7 @@ exports.getLoadup = async (req, res) => {
     let date = moment().startOf('day');
     let services = await Tasks.find({
       date,
-      // type: 'loadup',
+      type: 'loadup',
       technician: _id,
       status: {
         $in: ['pending', 'started'],
