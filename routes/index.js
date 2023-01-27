@@ -1,5 +1,3 @@
-const { address } = require('../controllers/address');
-
 /**
  * All api routes handles here
  * @author Yousuf Kalim
@@ -17,7 +15,8 @@ router.use('/products', require('./products')); // All the auth routes
 router.use('/clients', require('./clients')); // All the auth routes
 router.use('/schedule', require('./schedule')); // All the auth routes
 router.use('/notifications', require('./notifications'));
-router.get('/address', address);
+router.get('/address', require('../controllers/address').address);
+router.get('/video', require('./videos'));
 
 // Export
 module.exports = router;
