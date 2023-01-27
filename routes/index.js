@@ -16,7 +16,7 @@ router.use('/clients', require('./clients')); // All the auth routes
 router.use('/schedule', require('./schedule')); // All the auth routes
 router.use('/notifications', require('./notifications'));
 router.get('/address', require('../controllers/address').address);
-router.get('/video', require('./videos'));
+router.use('/video', require('./videos'));
 
 // Export
 module.exports = router;
