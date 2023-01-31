@@ -248,7 +248,7 @@ exports.delete = async (req, res) => {
 
     let user = await Admins.findByIdAndUpdate(userId, { active: false }, { new: true });
 
-    await Users.updateMany({ admin: userId }, { active: false });
+    await Users.updateMany({ admin: userId }, { $set: { active: false } });
 
     res.json({ success: true, message: 'Admin Deleted.', results: user });
   } catch (err) {
