@@ -3,6 +3,7 @@
  * @author Yousuf Kalim
  */
 const Admins = require('../models/Admins');
+const Users = require('../models/Users');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { sendEmail } = require('../utils/sendEmail');
@@ -246,6 +247,8 @@ exports.delete = async (req, res) => {
     let { userId } = req.params;
 
     let user = await Admins.findByIdAndUpdate(userId, { active: false }, { new: true });
+
+    await Users.updateMany({ admin: userId }, { active: false });
 
     res.json({ success: true, message: 'Admin Deleted.', results: user });
   } catch (err) {
