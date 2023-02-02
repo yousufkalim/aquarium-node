@@ -14,11 +14,12 @@ const DATE_FORMAT = process.env.DATE_FORMAT;
 exports.create = async (req, res) => {
   try {
     let { _id } = req.user;
-    let { date, start_time, end_time, technician, type, aquarium, repeat } = req.body;
+    let { date, start_time, end_time, technician, type, aquarium, repeat, time_unit } = req.body;
 
     //? Convert ${repeat} to number if it exists else 1
     repeat = repeat ? +repeat : 1;
-
+    // eslint-disable-next-line camelcase
+    time_unit = time_unit ?? 'day';
     date = moment(date, DATE_FORMAT, true);
 
     // eslint-disable-next-line no-underscore-dangle
@@ -88,7 +89,12 @@ exports.create = async (req, res) => {
           end_time: endTime,
           admin: _id,
         });
-        createdDocs.push({ title: `Week ${index + 1}`, success: true, date: date.toString() });
+        createdDocs.push({
+          // eslint-disable-next-line camelcase
+          title: `${time_unit.slice(0, -1)} ${index + 1}`,
+          success: true,
+          date: date.toString(),
+        });
         schedule.tasks.push(task._id);
         await schedule.save();
         if (type === 'service') {
@@ -107,9 +113,14 @@ exports.create = async (req, res) => {
           });
         }
       } else {
-        createdDocs.push({ title: `Week ${index + 1}`, success: false, date: date.toString() });
+        createdDocs.push({
+          // eslint-disable-next-line camelcase
+          title: `${time_unit.slice(0, -1)} ${index + 1}`,
+          success: false,
+          date: date.toString(),
+        });
       }
-      date = date.add(1, 'week'); //? Add 1 week in date
+      date = date.add(1, time_unit); // time_unit
     }
 
     res.json({
@@ -178,8 +189,13 @@ exports.update = async (req, res) => {
     let { date, technician, start_time, end_time, type, aquarium } = req.body;
     date = moment(date, DATE_FORMAT, true);
     let task = await Tasks.findById(taskId);
+
+    if (type === 'service' && !aquarium) {
+      return res.status(400).json({ success: false, message: 'Aquarium is required.' });
+    }
     // eslint-disable-next-line no-underscore-dangle
     let _aquarium = await Aquariums.findById(aquarium);
+
     const user = await Users.findById(technician);
 
     if (!task) {
@@ -231,24 +247,26 @@ exports.update = async (req, res) => {
 
     //? Save required data.
     task.type = type;
-    task.aquarium = aquarium;
+    task.aquarium = _aquarium?._id;
     task.start_time = startTime;
     task.end_time = endTime;
     task.date = date;
     await task.save();
-    await Notifications.create({
-      technician,
-      // ${_aquarium.client.first_name}'s
-      text: `Service for ${_aquarium.tank_details?.size} has been updated in your agenda.`,
-      task: task._id,
-    }).then(() => {
-      if (user.fcmToken)
-        sendNotification(
-          user.fcmToken,
-          'Aquarium',
-          `Service for ${_aquarium.tank_details?.size} has been updated in your agenda.`,
-        );
-    });
+    if (type === 'service') {
+      await Notifications.create({
+        technician,
+        // ${_aquarium.client.first_name}'s
+        text: `Service for ${_aquarium.tank_details?.size} has been updated in your agenda.`,
+        task: task._id,
+      }).then(() => {
+        if (user.fcmToken)
+          sendNotification(
+            user.fcmToken,
+            'Aquarium',
+            `Service for ${_aquarium.tank_details?.size} has been updated in your agenda.`,
+          );
+      });
+    }
 
     res.json({ success: true, message: 'Task Updated. ', results: task });
   } catch (err) {

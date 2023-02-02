@@ -254,8 +254,9 @@ exports.validateTask = [
         throw new Error('End time should be after start time.');
       }
 
-      if (moment(end).diff(moment(start), 'minute') < 30) {
-        throw new Error('Minimum task time must be 30 minutes.');
+      //? Minimum time for task.
+      if (moment(end).diff(moment(start), 'minute') < 15) {
+        throw new Error('Minimum task time must be 15 minutes.');
       }
 
       return true;
@@ -263,7 +264,17 @@ exports.validateTask = [
   check('repeat')
     .optional()
     .isNumeric({ no_symbols: true })
-    .withMessage('Repeat must be in numeric.'),
+    .withMessage('Repeat must be in numeric.')
+    .custom((value) => {
+      if (parseInt(value) > 100) {
+        throw new Error('Max 100 repeating iterations allowed.');
+      }
+      return true;
+    }),
+  check('time_unit')
+    .optional()
+    .isIn(['days', 'weeks', 'months'])
+    .withMessage('Invalid time unit selection.'),
 ];
 
 exports.validateAttendance = [
