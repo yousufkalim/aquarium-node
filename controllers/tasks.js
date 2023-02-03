@@ -19,7 +19,7 @@ exports.create = async (req, res) => {
     //? Convert ${repeat} to number if it exists else 1
     repeat = repeat ? +repeat : 0;
     // eslint-disable-next-line camelcase
-    time_unit = time_unit ?? 'day';
+    time_unit = time_unit ?? 'days';
     date = moment(date, DATE_FORMAT, true);
 
     // eslint-disable-next-line no-underscore-dangle
