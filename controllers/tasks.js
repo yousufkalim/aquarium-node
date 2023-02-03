@@ -17,7 +17,7 @@ exports.create = async (req, res) => {
     let { date, start_time, end_time, technician, type, aquarium, repeat, time_unit } = req.body;
 
     //? Convert ${repeat} to number if it exists else 1
-    repeat = repeat ? +repeat : 1;
+    repeat = repeat ? +repeat : 0;
     // eslint-disable-next-line camelcase
     time_unit = time_unit ?? 'day';
     date = moment(date, DATE_FORMAT, true);
@@ -45,7 +45,7 @@ exports.create = async (req, res) => {
     };
 
     //? Repeat task creation for ${repeat} times.
-    for (let index = 0; index < repeat; index++) {
+    for (let index = 0; index <= repeat; index++) {
       //? create date object for service
       let startTime = moment(
         // eslint-disable-next-line camelcase
