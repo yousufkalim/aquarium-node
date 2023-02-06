@@ -310,13 +310,15 @@ exports.getService = async (req, res) => {
   }
 };
 
-exports.getLoadup = async (req, res) => {
+exports.getWhatsNext = async (req, res) => {
   try {
     let { _id } = req.user;
     let date = moment().startOf('day');
     let services = await Tasks.find({
       date,
-      type: 'loadup',
+      type: {
+        $in: ['loadup', 'service', 'unload'],
+      },
       technician: _id,
       status: {
         $in: ['pending', 'started'],
