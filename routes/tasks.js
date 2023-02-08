@@ -26,6 +26,7 @@ router.get('/report', checkAuth, validateDates, isValidated, tasks.getServicesIn
 router.get('/:taskId', checkAuth, validateTaskId, isValidated, tasks.getTaskById); // get task by id
 
 router.put('/:taskId', validateTask, isValidated, checkAdminAuth, tasks.update);
+router.patch('/:taskId', checkAuth, validateTaskCheckList, isValidated, tasks.updateChecks);
 
 router.delete('/:taskId', checkAdminAuth, tasks.delete);
 

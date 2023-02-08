@@ -22,6 +22,7 @@ const taskSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+    started_at: Date,
     end_time: {
       type: Date,
       required: true,
