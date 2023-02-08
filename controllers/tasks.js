@@ -287,7 +287,7 @@ exports.getService = async (req, res) => {
       type: 'service',
       technician: _id,
       status: {
-        $in: status === 'next' ? ['pending', 'driving'] : ['started'],
+        $in: status === 'next' ? ['pending', 'driving'] : ['driving', 'started'],
       },
     })
       .sort({ start_time: 'asc' })
@@ -321,7 +321,7 @@ exports.getWhatsNext = async (req, res) => {
       },
       technician: _id,
       status: {
-        $in: ['pending', 'started'],
+        $in: ['pending', 'driving', 'started'],
       },
     })
       .sort({ start_time: 'asc' })
@@ -386,6 +386,7 @@ exports.startTask = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Task already started.' });
     } else if (task.type !== 'service') {
       task.status = 'started';
+      task.started_at = moment();
       await task.save();
       return res.json({ success: true, results: task, message: 'Task started.' });
     }
@@ -413,6 +414,9 @@ exports.startTask = async (req, res) => {
     //TODO: If status is "driving" send message "technician is arriving" else send message "task started".
 
     task.status = status;
+    if (status === 'started') {
+      task.started_at = moment();
+    }
     await task.save();
 
     res.json({ success: true, results: task, message: 'Task started.' });
@@ -469,6 +473,19 @@ exports.getServicesInDateRange = async (req, res) => {
     res.json({ success: true, results: services });
   } catch (err) {
     // Error handling
+    // eslint-disable-next-line no-console
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+exports.updateChecks = async (req, res) => {
+  try {
+    let task = await Tasks.findById(req.params.taskId);
+    task.checklists = req.body.checklist;
+    await task.save();
+    res.json({ success: true, results: task });
+  } catch (err) {
     // eslint-disable-next-line no-console
     console.log('Error ----> ', err);
     res.status(500).json({ success: false, message: 'Internal server error' });
