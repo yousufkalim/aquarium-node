@@ -52,6 +52,7 @@ const taskSchema = new mongoose.Schema(
       ref: 'schedules',
       required: true,
     },
+    comment: String,
     checklists: [
       {
         title: {

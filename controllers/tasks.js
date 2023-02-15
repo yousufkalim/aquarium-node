@@ -357,6 +357,7 @@ exports.completeTask = async (req, res) => {
     }
 
     task.checklists = req.body.checklist;
+    task.comment = req.body?.comment;
     task.status = 'completed';
     await task.save();
     //TODO: SEND email / message to customer.
