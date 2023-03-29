@@ -17,6 +17,7 @@ router.use('/schedule', require('./schedule')); // All the auth routes
 router.use('/notifications', require('./notifications'));
 router.get('/address', require('../controllers/address').address);
 router.use('/video', require('./videos'));
+router.use('/qb-auth', require('./quickBooks'));
 
 // Export
 module.exports = router;
