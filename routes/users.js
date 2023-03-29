@@ -27,6 +27,8 @@ router.get('/', checkAdminAuth, users.getAll); // Get all users at once
 
 router.get('/:userId', checkAuth, users.getById); // Get one user by it's id
 
+router.get('/:userId/hours-worked', checkAuth, users.hoursWorked); //
+
 // Update
 router.put(
   '/:userId',

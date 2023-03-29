@@ -7,8 +7,33 @@ exports.getAll = async (req, res) => {
   try {
     let user = req.user;
     const adminId = user.role === 'user' ? user.admin : user._id;
-    let products = await Products.find({ admin: adminId, deleted: false });
-    res.json({ success: true, results: products });
+    const page = +req.query.page || 1;
+    const query = req.query.text;
+    const limit = 10;
+    const skip = limit * (page - 1);
+    const searchQuery = query
+      ? {
+          name: { $regex: query, $options: 'i' },
+          admin: adminId,
+          deleted: false,
+        }
+      : {
+          admin: adminId,
+          deleted: false,
+        };
+
+    const totalProducts = await Products.countDocuments(searchQuery);
+    const totalPages = Math.ceil(totalProducts / limit);
+
+    const products = await Products.find(searchQuery).skip(skip).limit(limit);
+    res.json({
+      success: true,
+      totalPages,
+      page,
+      prev: page > 1 ? page - 1 : null,
+      next: page < totalPages ? page + 1 : null,
+      results: products,
+    });
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console

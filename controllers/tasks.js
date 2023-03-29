@@ -14,7 +14,8 @@ const DATE_FORMAT = process.env.DATE_FORMAT;
 exports.create = async (req, res) => {
   try {
     let { _id } = req.user;
-    let { date, start_time, end_time, technician, type, aquarium, repeat, time_unit } = req.body;
+    let { date, start_time, end_time, technician, type, aquarium, repeat, time_unit, rate } =
+      req.body;
 
     //? Convert ${repeat} to number if it exists else 1
     repeat = repeat ? +repeat : 0;
@@ -88,6 +89,7 @@ exports.create = async (req, res) => {
           start_time: startTime,
           end_time: endTime,
           admin: _id,
+          rate,
         });
         createdDocs.push({
           // eslint-disable-next-line camelcase
@@ -186,7 +188,7 @@ exports.getServices = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     let { taskId } = req.params;
-    let { date, technician, start_time, end_time, type, aquarium } = req.body;
+    let { date, technician, start_time, end_time, type, aquarium, rate } = req.body;
     date = moment(date, DATE_FORMAT, true);
     let task = await Tasks.findById(taskId);
 
@@ -251,6 +253,7 @@ exports.update = async (req, res) => {
     task.start_time = startTime;
     task.end_time = endTime;
     task.date = date;
+    task.rate = rate;
     await task.save();
     if (type === 'service') {
       await Notifications.create({
@@ -359,6 +362,7 @@ exports.completeTask = async (req, res) => {
     task.checklists = req.body.checklist;
     task.comment = req.body?.comment;
     task.status = 'completed';
+    task.completed_at = moment();
     await task.save();
     //TODO: SEND email / message to customer.
 
@@ -486,6 +490,31 @@ exports.updateChecks = async (req, res) => {
     task.checklists = req.body.checklist;
     await task.save();
     res.json({ success: true, results: task });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+exports.products = async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const { products } = req.body;
+
+    const task = await Tasks.findById(taskId);
+
+    if (!task) {
+      return res.status(404).json({ success: false, message: 'Task not found' });
+    } else if (task.status !== 'started') {
+      return res.status(400).json({ success: false, message: 'Start task first.' });
+    }
+
+    task.products = products;
+
+    await task.save();
+
+    res.json({ success: true, task });
   } catch (err) {
     // eslint-disable-next-line no-console
     console.log('Error ----> ', err);

@@ -4,7 +4,10 @@
  */
 const Users = require('../models/Users');
 const Schedules = require('../models/Schedules');
+const Tasks = require('../models/Tasks');
 const moment = require('moment');
+const { default: mongoose } = require('mongoose');
+const DATE_FORMAT = process.env.DATE_FORMAT;
 
 /**
  * Create User - Signup
@@ -184,6 +187,63 @@ exports.attendance = async (req, res) => {
     user.current_status = 'clocked_in';
     await user.save();
     return res.json({ success: true, message: 'Clocked in.', user });
+  } catch (err) {
+    // Error handling
+    // eslint-disable-next-line no-console
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+exports.hoursWorked = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const date = moment(req.query.date, DATE_FORMAT, true).isValid()
+      ? moment(req.query.date, DATE_FORMAT, true)
+      : moment().startOf('day');
+
+    const results = await Tasks.aggregate([
+      {
+        $match: {
+          technician: mongoose.Types.ObjectId(userId),
+          date: new Date(date),
+          type: 'service',
+          status: 'completed',
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          hours: {
+            $sum: {
+              $divide: [{ $subtract: ['$completed_at', '$started_at'] }, 1000 * 60 * 60],
+            },
+          },
+          total: {
+            $sum: {
+              $multiply: [
+                {
+                  $divide: [{ $subtract: ['$completed_at', '$started_at'] }, 1000 * 60 * 60],
+                },
+                '$rate',
+              ],
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          total: { $ifNull: ['$total', 0] },
+          hours: { $ifNull: ['$hours', 0] },
+        },
+      },
+    ]);
+
+    res.json({
+      success: true,
+      results: results.length ? results[0] : { total: 0, hours: 0 },
+    });
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console

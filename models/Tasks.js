@@ -23,6 +23,7 @@ const taskSchema = new mongoose.Schema(
       required: true,
     },
     started_at: Date,
+    completed_at: Date,
     end_time: {
       type: Date,
       required: true,
@@ -43,8 +44,12 @@ const taskSchema = new mongoose.Schema(
     },
     products: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'products',
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'products',
+        },
+        price: Number,
+        quantity: Number,
       },
     ],
     schedule: {
@@ -71,6 +76,9 @@ const taskSchema = new mongoose.Schema(
         reason: String,
       },
     ],
+    rate: {
+      type: Number,
+    },
   },
   {
     timestamps: true,

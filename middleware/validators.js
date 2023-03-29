@@ -19,6 +19,12 @@ Validations
 exports.validateUser = [
   check('first_name', 'First name is required.').notEmpty().trim(),
   check('last_name', 'Last name is required.').notEmpty().trim(),
+  check('rate')
+    .notEmpty()
+    .withMessage('Rate per hour is required.')
+    .isFloat()
+    .withMessage('Rate can only be numeric.')
+    .trim(),
   check('phone_number')
     .notEmpty()
     .withMessage('Phone number is required.')
@@ -158,7 +164,7 @@ exports.validateProduct = [
   check('price')
     .notEmpty()
     .withMessage('Price is required.')
-    .isNumeric({ no_symbols: true })
+    .isFloat()
     .withMessage('Price can only be numeric.'),
 ];
 exports.validateClient = [
@@ -275,6 +281,12 @@ exports.validateTask = [
     .optional()
     .isIn(['days', 'weeks', 'months'])
     .withMessage('Invalid time unit selection.'),
+  check('rate')
+    .notEmpty()
+    .withMessage('Rate per hour is required.')
+    .isFloat()
+    .withMessage('Rate can only be numeric.')
+    .trim(),
 ];
 
 exports.validateAttendance = [
@@ -341,6 +353,26 @@ exports.validateDates = [
 
       return true;
     }),
+];
+
+exports.validateAddProduct = [
+  param('taskId').isMongoId().withMessage('Invalid task id.'),
+  check('products').isArray().withMessage('Products list must be in array'),
+  check('products.*.product')
+    .notEmpty()
+    .withMessage('Product id is required')
+    .isMongoId()
+    .withMessage('Invalid product id.'),
+  check('products.*.price')
+    .notEmpty()
+    .withMessage('Product price is required')
+    .isFloat()
+    .withMessage('Product price must be a number'),
+  check('products.*.quantity')
+    .notEmpty()
+    .withMessage('Product quantity is required')
+    .isNumeric({ no_symbols: true })
+    .withMessage('Product quantity must be a number'),
 ];
 
 /*
