@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /**
  * @author Najam Ul Saqib
  */
@@ -513,6 +514,52 @@ exports.products = async (req, res) => {
     task.products = products;
 
     await task.save();
+
+    res.json({ success: true, task });
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+exports.generateReceipt = async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const task = await Tasks.findById(taskId).populate([
+      { path: 'technician', select: '-otp -fcmToken' },
+      {
+        path: 'aquarium',
+        select: 'address tank_details client',
+        populate: {
+          path: 'client',
+          select: 'first_name last_name phone_number email',
+        },
+      },
+      {
+        path: 'products.product',
+        select: 'name',
+      },
+    ]);
+
+    const start = moment(task.started_at);
+    const end = moment(task.completed_at);
+
+    task._doc.worked_hours = end.diff(start, 'minutes') / 60;
+    delete task._doc.checklists;
+    delete task._doc.schedule;
+    delete task._doc.admin;
+    delete task._doc.createdAt;
+    delete task._doc.updatedAt;
+    delete task._doc.__v;
+    // const products = task.products.map((i) => {
+    //   return {
+    //     name: i.product.name,
+    //     price: i.price,
+    //     quantity: i.quantity,
+    //     amount: i.price * i.quantity,
+    //   };
+    // });
 
     res.json({ success: true, task });
   } catch (err) {
