@@ -4,7 +4,10 @@
  */
 const Users = require('../models/Users');
 const Schedules = require('../models/Schedules');
+const Tasks = require('../models/Tasks');
 const moment = require('moment');
+const mongoose = require('mongoose');
+const DATE_FORMAT = process.env.DATE_FORMAT;
 
 /**
  * Create User - Signup
@@ -184,6 +187,253 @@ exports.attendance = async (req, res) => {
     user.current_status = 'clocked_in';
     await user.save();
     return res.json({ success: true, message: 'Clocked in.', user });
+  } catch (err) {
+    // Error handling
+    // eslint-disable-next-line no-console
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+exports.report = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const date = moment(req.query.date, DATE_FORMAT, true).isValid()
+      ? moment(req.query.date, DATE_FORMAT, true)
+      : moment().startOf('day');
+
+    const results = await Tasks.aggregate([
+      {
+        $match: {
+          technician: mongoose.Types.ObjectId(userId),
+          date: new Date(date),
+          type: 'service',
+          status: 'completed',
+        },
+      },
+      {
+        $addFields: {
+          product_amount: {
+            $reduce: {
+              input: '$products',
+              initialValue: 0,
+              in: {
+                $add: ['$$value', { $multiply: ['$$this.price', '$$this.quantity'] }],
+              },
+            },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          hours: {
+            $sum: {
+              $divide: [{ $subtract: ['$completed_at', '$started_at'] }, 1000 * 60 * 60],
+            },
+          },
+          hours_amount: {
+            $sum: {
+              $multiply: [
+                {
+                  $divide: [{ $subtract: ['$completed_at', '$started_at'] }, 1000 * 60 * 60],
+                },
+                '$rate',
+              ],
+            },
+          },
+          product_amount: { $sum: '$product_amount' },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          hours_amount: 1,
+          hours: 1,
+          product_amount: 1,
+          total: { $sum: ['$hours_amount', '$product_amount'] },
+        },
+      },
+    ]);
+
+    res.json({
+      success: true,
+      results: results.length
+        ? results[0]
+        : {
+            hours: 0,
+            hours_amount: 0,
+            product_amount: 0,
+            total: 0,
+          },
+    });
+  } catch (err) {
+    // Error handling
+    // eslint-disable-next-line no-console
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+exports.reportAdmin = async (req, res) => {
+  try {
+    const admin = req.user._id;
+    const date = moment(req.query.date, DATE_FORMAT, true).isValid()
+      ? moment(req.query.date, DATE_FORMAT, true)
+      : moment().startOf('day');
+
+    const results = await Tasks.aggregate([
+      {
+        $match: {
+          admin: mongoose.Types.ObjectId(admin),
+          date: new Date(date),
+          type: 'service',
+          status: 'completed',
+        },
+      },
+      {
+        $addFields: {
+          product_amount: {
+            $reduce: {
+              input: '$products',
+              initialValue: 0,
+              in: {
+                $add: ['$$value', { $multiply: ['$$this.price', '$$this.quantity'] }],
+              },
+            },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: '$technician',
+          hours: {
+            $sum: {
+              $divide: [{ $subtract: ['$completed_at', '$started_at'] }, 1000 * 60 * 60],
+            },
+          },
+          hours_amount: {
+            $sum: {
+              $multiply: [
+                {
+                  $divide: [{ $subtract: ['$completed_at', '$started_at'] }, 1000 * 60 * 60],
+                },
+                '$rate',
+              ],
+            },
+          },
+          product_amount: { $sum: '$product_amount' },
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'technician',
+        },
+      },
+      {
+        $project: {
+          technician: { $arrayElemAt: ['$technician', 0] },
+          _id: 0,
+          hours_amount: 1,
+          hours: 1,
+          product_amount: 1,
+          total: { $sum: ['$hours_amount', '$product_amount'] },
+        },
+      },
+    ]);
+
+    res.json({
+      success: true,
+      results,
+    });
+  } catch (err) {
+    // Error handling
+    // eslint-disable-next-line no-console
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+exports.reportAdminMonth = async (req, res) => {
+  try {
+    const admin = req.user._id;
+    const date = moment(req.query.date, DATE_FORMAT, true).isValid()
+      ? moment(req.query.date, DATE_FORMAT, true)
+      : moment();
+
+    const results = await Tasks.aggregate([
+      {
+        $match: {
+          admin: mongoose.Types.ObjectId(admin),
+          date: {
+            $gte: moment(date).startOf('month').toDate(),
+            $lte: moment(date).endOf('month').toDate(),
+          },
+          type: 'service',
+          status: 'completed',
+        },
+      },
+      {
+        $addFields: {
+          product_amount: {
+            $reduce: {
+              input: '$products',
+              initialValue: 0,
+              in: {
+                $add: ['$$value', { $multiply: ['$$this.price', '$$this.quantity'] }],
+              },
+            },
+          },
+        },
+      },
+      {
+        $group: {
+          _id: '$technician',
+          hours: {
+            $sum: {
+              $divide: [{ $subtract: ['$completed_at', '$started_at'] }, 1000 * 60 * 60],
+            },
+          },
+          hours_amount: {
+            $sum: {
+              $multiply: [
+                {
+                  $divide: [{ $subtract: ['$completed_at', '$started_at'] }, 1000 * 60 * 60],
+                },
+                '$rate',
+              ],
+            },
+          },
+          product_amount: { $sum: '$product_amount' },
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'technician',
+        },
+      },
+      {
+        $project: {
+          technician: { $arrayElemAt: ['$technician', 0] },
+          _id: 0,
+          hours_amount: 1,
+          hours: 1,
+          product_amount: 1,
+          total: { $sum: ['$hours_amount', '$product_amount'] },
+        },
+      },
+    ]);
+
+    res.json({
+      success: true,
+      results,
+    });
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console

@@ -11,6 +11,7 @@ const {
   validateTaskStatus,
   validateTaskId,
   validateDates,
+  validateAddProduct,
 } = require('../middleware/validators');
 
 // Read
@@ -24,9 +25,12 @@ router.get('/service', checkAuth, tasks.getService); // get current / next servi
 router.get('/whatsnext', checkAuth, tasks.getWhatsNext); // get loadup.
 router.get('/report', checkAuth, validateDates, isValidated, tasks.getServicesInDateRange); // get tasks in a date range
 router.get('/:taskId', checkAuth, validateTaskId, isValidated, tasks.getTaskById); // get task by id
+router.get('/receipt/:taskId', checkAuth, tasks.generateReceipt); // get task by id
 
-router.put('/:taskId', validateTask, isValidated, checkAdminAuth, tasks.update);
+router.put('/:taskId', checkAdminAuth, validateTask, isValidated, tasks.update);
 router.patch('/:taskId', checkAuth, validateTaskCheckList, isValidated, tasks.updateChecks);
+
+router.patch('/:taskId/product', checkAuth, validateAddProduct, isValidated, tasks.products);
 
 router.delete('/:taskId', checkAdminAuth, tasks.delete);
 

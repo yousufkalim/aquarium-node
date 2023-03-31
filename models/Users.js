@@ -42,6 +42,10 @@ const userSchema = new mongoose.Schema(
       default: true,
     },
     fcmToken: String,
+    rate: {
+      type: Number,
+      required: true,
+    },
   },
   {
     timestamps: true,

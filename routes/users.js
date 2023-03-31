@@ -25,6 +25,10 @@ router.post('/attendance', checkAuth, validateAttendance, isValidated, users.att
 // Read
 router.get('/', checkAdminAuth, users.getAll); // Get all users at once
 
+router.get('/report/month', checkAdminAuth, users.reportAdminMonth); // hours worked for admin's users.
+router.get('/report/:userId', checkAuth, users.report); // hours worked for user.
+router.get('/report', checkAdminAuth, users.reportAdmin); // hours worked for admin's users.
+
 router.get('/:userId', checkAuth, users.getById); // Get one user by it's id
 
 // Update
