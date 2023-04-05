@@ -176,6 +176,10 @@ exports.getServices = async (req, res) => {
           path: 'client',
         },
       },
+      {
+        path: 'products.product',
+        select: 'name',
+      },
     ]);
     res.json({ success: true, results: services });
   } catch (err) {
@@ -304,6 +308,10 @@ exports.getService = async (req, res) => {
             path: 'client',
           },
         },
+        {
+          path: 'products.product',
+          select: 'name',
+        },
       ]);
     res.json({ success: true, results: services[0] ?? null });
   } catch (err) {
@@ -337,6 +345,10 @@ exports.getWhatsNext = async (req, res) => {
           populate: {
             path: 'client',
           },
+        },
+        {
+          path: 'products.product',
+          select: 'name',
         },
       ]);
     res.json({ success: true, results: services[0] ?? null });
@@ -444,6 +456,10 @@ exports.getTaskById = async (req, res) => {
           path: 'client',
         },
       },
+      {
+        path: 'products.product',
+        select: 'name',
+      },
     ]);
     res.json({ success: true, results: task });
   } catch (err) {
@@ -474,6 +490,10 @@ exports.getServicesInDateRange = async (req, res) => {
         populate: {
           path: 'client',
         },
+      },
+      {
+        path: 'products.product',
+        select: 'name',
       },
     ]);
     res.json({ success: true, results: services });
