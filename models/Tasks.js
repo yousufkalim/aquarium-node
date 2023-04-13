@@ -1,6 +1,8 @@
 // Init
 const mongoose = require('mongoose');
+const autoIncrement = require('mongoose-auto-increment');
 
+autoIncrement.initialize(mongoose.connection);
 // Admin Schema
 const taskSchema = new mongoose.Schema(
   {
@@ -84,6 +86,14 @@ const taskSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+
+//? Add the auto-increment plugin to the schema
+taskSchema.plugin(autoIncrement.plugin, {
+  model: 'tasks',
+  field: 'serviceId',
+  startAt: 100,
+  incrementBy: 1,
+});
 
 // Model
 module.exports = mongoose.model('tasks', taskSchema);
