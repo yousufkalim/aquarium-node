@@ -282,6 +282,7 @@ exports.validateTask = [
     .isIn(['days', 'weeks', 'months'])
     .withMessage('Invalid time unit selection.'),
   check('rate')
+    .if((_, { req }) => req.body.type === 'service')
     .notEmpty()
     .withMessage('Rate per hour is required.')
     .isFloat()
