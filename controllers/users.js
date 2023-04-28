@@ -26,12 +26,12 @@ exports.create = async (req, res) => {
         existingUser.first_name = req.body.first_name;
         existingUser.last_name = req.body.last_name;
         existingUser.active = true;
-        existingUser.admin = admin;
-        existingUser.save();
+        existingUser.admin = admin._id;
+        await existingUser.save();
 
         return res.json({
           success: true,
-          admin: existingUser,
+          user: existingUser,
           message: 'Technician added.',
         });
       }
