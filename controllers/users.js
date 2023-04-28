@@ -27,6 +27,7 @@ exports.create = async (req, res) => {
         existingUser.last_name = req.body.last_name;
         existingUser.active = true;
         existingUser.admin = admin._id;
+        existingUser.rate = req.body.rate;
         await existingUser.save();
 
         return res.json({
