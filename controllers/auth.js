@@ -7,9 +7,11 @@ const Admins = require('../models/Admins');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { sendEmail } = require('../utils/sendEmail');
+const { sendMessage } = require('../utils/sendMessage');
 const bcryptSalt = process.env.BCRYPT_SALT || 10;
 const tokenSecret = process.env.JWT_SECRET;
 const origin = process.env.ORIGIN;
+const appName = process.env.APP_NAME;
 
 /**
  * Login
@@ -93,8 +95,13 @@ exports.sendOtp = async (req, res) => {
     user.otp = otp;
     await user.save();
 
-    //TODO: send OTP via twilio
-    return res.json({ success: true, message: 'OTP Sent.' });
+    sendMessage(phone_number, `${otp} is your ${appName} confirmation code.`)
+      .then((e) => {
+        return res.json(e);
+      })
+      .catch((e) => {
+        throw e;
+      });
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console
