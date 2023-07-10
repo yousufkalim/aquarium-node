@@ -6,6 +6,7 @@
 const { check, validationResult, param, query } = require('express-validator');
 const fs = require('fs');
 const moment = require('moment');
+const { isValidPhoneNumber } = require('../utils/sendMessage');
 const DATE_FORMAT = process.env.DATE_FORMAT;
 
 /*
@@ -31,7 +32,14 @@ exports.validateUser = [
     .isNumeric({ no_symbols: true })
     .withMessage('Phone number can only be numeric.')
     .isLength({ min: 10, max: 10 })
-    .withMessage('Phone number must be 10 digits long'),
+    .withMessage('Phone number must be 10 digits long')
+    .custom((value) => {
+      const isValid = isValidPhoneNumber(value);
+      if (!isValid) {
+        throw new Error('Invalid Phone number.');
+      }
+      return true;
+    }),
 ];
 exports.validateAdmin = [
   check('name', 'Name is required.').notEmpty().trim(),
@@ -95,7 +103,14 @@ exports.validateTechnicianLogin = [
     .isNumeric({ no_symbols: true })
     .withMessage('Phone number can only be numeric.')
     .isLength({ min: 10, max: 10 })
-    .withMessage('Phone number must be 10 digits long'),
+    .withMessage('Phone number must be 10 digits long')
+    .custom((value) => {
+      const isValid = isValidPhoneNumber(value);
+      if (!isValid) {
+        throw new Error('Invalid Phone number.');
+      }
+      return true;
+    }),
   check('otp')
     .optional()
     .isNumeric({ no_symbols: true })
@@ -176,7 +191,14 @@ exports.validateClient = [
     .isNumeric({ no_symbols: true })
     .withMessage('Phone number can only be numeric.')
     .isLength({ min: 10, max: 10 })
-    .withMessage('Phone number must be 10 digits long'),
+    .withMessage('Phone number must be 10 digits long')
+    .custom((value) => {
+      const isValid = isValidPhoneNumber(value);
+      if (!isValid) {
+        throw new Error('Invalid Phone number.');
+      }
+      return true;
+    }),
   check('email').optional().isEmail().withMessage('Invalid Email').trim().toLowerCase(),
 ];
 exports.validateAquarium = [

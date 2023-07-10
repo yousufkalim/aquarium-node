@@ -11,6 +11,7 @@ const moment = require('moment');
 const { sendNotification } = require('../utils/sendNotification');
 
 const DATE_FORMAT = process.env.DATE_FORMAT;
+const REPETITION = process.env.REPETITION;
 
 exports.create = async (req, res) => {
   try {
@@ -24,30 +25,45 @@ exports.create = async (req, res) => {
     time_unit = time_unit ?? 'days';
     date = moment(date, DATE_FORMAT, true);
 
+    let endDate = moment(date);
+
+    if (repeat >= 1) {
+      endDate = endDate.add(REPETITION, 'years');
+    }
+
     // eslint-disable-next-line no-underscore-dangle
     let _aquarium = await Aquariums.findById(aquarium).populate('client');
     const user = await Users.findById(technician);
 
-    //? save created docs
-    let createdDocs = [];
-    let service = {
-      aquarium: _aquarium,
-      start_time: moment(
-        // eslint-disable-next-line camelcase
-        date.format(DATE_FORMAT) + ' ' + start_time.split(' ').join(':01 '), //? adding one second to avoid conflict
-        DATE_FORMAT + ' ' + 'HH:mm:ss a',
-        true,
-      ),
-      end_time: moment(
-        // eslint-disable-next-line camelcase
-        date.format(DATE_FORMAT) + ' ' + end_time,
-        DATE_FORMAT + ' ' + 'HH:mm a',
-        true,
-      ),
-    };
+    // //? save created docs
+    // let createdDocs = [];
 
-    //? Repeat task creation for ${repeat} times.
-    for (let index = 0; index <= repeat; index++) {
+    // let service = {
+    //   aquarium: _aquarium,
+    //   start_time: moment(
+    //     // eslint-disable-next-line camelcase
+    //     date.format(DATE_FORMAT) + ' ' + start_time.split(' ').join(':01 '), //? adding one second to avoid conflict
+    //     DATE_FORMAT + ' ' + 'HH:mm:ss a',
+    //     true,
+    //   ),
+    //   end_time: moment(
+    //     // eslint-disable-next-line camelcase
+    //     date.format(DATE_FORMAT) + ' ' + end_time,
+    //     DATE_FORMAT + ' ' + 'HH:mm a',
+    //     true,
+    //   ),
+    // };
+
+    res.json({
+      success: true,
+      message: 'Task(s) are being generated, you can continue using the application.',
+    });
+
+    let notification = true;
+    // let index = 0;
+    // // ? Repeat task creation for ${repeat} times.
+    // for (let index = 0; index <= repeat; index++) {
+    do {
       //? create date object for service
       let startTime = moment(
         // eslint-disable-next-line camelcase
@@ -92,15 +108,18 @@ exports.create = async (req, res) => {
           admin: _id,
           rate,
         });
-        createdDocs.push({
-          // eslint-disable-next-line camelcase
-          title: `${time_unit.slice(0, -1)} ${index + 1}`,
-          success: true,
-          date: date.toString(),
-        });
+
+        // createdDocs.push({
+        //   // eslint-disable-next-line camelcase
+        //   title: `${time_unit.slice(0, -1)} ${index + 1}`,
+        //   success: true,
+        //   date: date.toString(),
+        // });
+
         schedule.tasks.push(task._id);
         await schedule.save();
-        if (type === 'service') {
+
+        if (type === 'service' && notification) {
           await Notifications.create({
             technician,
             // ${_aquarium.client.first_name}'s
@@ -114,26 +133,32 @@ exports.create = async (req, res) => {
                 `Service for ${_aquarium.tank_details?.size} has been added to you agenda.`,
               );
           });
+          // Send notification for 1st task only
+          notification = false;
         }
-      } else {
-        createdDocs.push({
-          // eslint-disable-next-line camelcase
-          title: `${time_unit.slice(0, -1)} ${index + 1}`,
-          success: false,
-          date: date.toString(),
-        });
       }
-      date = date.add(1, time_unit); // time_unit
-    }
 
-    res.json({
-      success: true,
-      // message: 'Task(s) created.',
-      results: {
-        service,
-        repeat: createdDocs,
-      },
-    });
+      // else {
+      //   createdDocs.push({
+      //     // eslint-disable-next-line camelcase
+      //     title: `${time_unit.slice(0, -1)} ${index + 1}`,
+      //     success: false,
+      //     date: date.toString(),
+      //   });
+      // }
+
+      // index += 1;
+      date = date.add(repeat, time_unit); // time_unit
+    } while (date.isBefore(endDate));
+
+    // res.json({
+    //   success: true,
+    //   // message: 'Task(s) created.',
+    //   results: {
+    //     service,
+    //     repeat: createdDocs,
+    //   },
+    // });
   } catch (err) {
     // Error handling
     // eslint-disable-next-line no-console
