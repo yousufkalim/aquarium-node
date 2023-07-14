@@ -21,7 +21,7 @@ exports.isValidPhoneNumber = (phoneNumber) => {
 
 /**
  * Send OTP to user
- * @param {String} phone
+ * @param {String | number} phone
  * @param {String} body
  */
 exports.sendMessage = (phone, body) => {
@@ -36,7 +36,7 @@ exports.sendMessage = (phone, body) => {
       })
       .then(() => {
         // On message successfully sent
-        resolve({ success: true, message: 'OTP sent' });
+        resolve({ success: true, message: 'SMS notification sent.' });
       })
       .catch((err) => {
         // On error
