@@ -9,6 +9,7 @@ const Notifications = require('../models/Notifications');
 const Tasks = require('../models/Tasks');
 const moment = require('moment');
 const { sendNotification } = require('../utils/sendNotification');
+const { sendMessage } = require('../utils/sendMessage');
 
 const DATE_FORMAT = process.env.DATE_FORMAT;
 const REPETITION = process.env.REPETITION;
@@ -389,7 +390,14 @@ exports.completeTask = async (req, res) => {
   try {
     let { _id } = req.user;
     let { taskId } = req.params;
-    let task = await Tasks.findOne({ _id: taskId, technician: _id });
+    let task = await Tasks.findOne({ _id: taskId, technician: _id }).populate({
+      path: 'aquarium',
+      select: { tank_details: 1, client: 1, _id: 0 },
+      populate: {
+        path: 'client',
+        select: { phone_number: 1, first_name: 1, last_name: 1, _id: 0 },
+      },
+    });
 
     if (!task) {
       return res.status(404).json({ success: false, message: 'Task not found.' });
@@ -402,7 +410,26 @@ exports.completeTask = async (req, res) => {
     task.status = 'completed';
     task.completed_at = moment();
     await task.save();
-    //TODO: SEND email / message to customer.
+
+    //* SEND email / message to customer only for type service.
+
+    if (task.type === 'service') {
+      const {
+        tank_details: { size },
+        client: { phone_number: phoneNumber, first_name: firstName, last_name: lastName },
+      } = task.aquarium;
+
+      // Hi! {CLIENT's NAME}, your service for {TANK size} is completed.
+
+      const MESSAGE = `Hi! ${firstName} ${lastName}, your service for ${size.toLowerCase()} is completed.`;
+
+      if (phoneNumber) {
+        sendMessage(phoneNumber, MESSAGE).then((r) => {
+          // eslint-disable-next-line no-console
+          console.log('📢 [tasks.js:429]', r);
+        });
+      }
+    }
 
     res.json({ success: true, results: task, message: 'Task completed.' });
   } catch (err) {
@@ -419,7 +446,20 @@ exports.startTask = async (req, res) => {
     let { taskId } = req.params;
     let { status } = req.body;
 
-    let task = await Tasks.findOne({ _id: taskId, technician: _id });
+    let task = await Tasks.findOne({ _id: taskId, technician: _id }).populate([
+      {
+        path: 'technician',
+        select: { first_name: 1, last_name: 1, _id: 0 },
+      },
+      {
+        path: 'aquarium',
+        select: { tank_details: 1, client: 1, _id: 0 },
+        populate: {
+          path: 'client',
+          select: { phone_number: 1, first_name: 1, last_name: 1, _id: 0 },
+        },
+      },
+    ]);
 
     if (!task) {
       return res.status(404).json({ success: false, message: 'Task not found.' });
@@ -446,15 +486,42 @@ exports.startTask = async (req, res) => {
     if (found > -1) {
       // check if service have driving period.
       let drive = services[found - 1];
-      if (drive && drive.type === 'drive')
+      if (drive && drive.type === 'drive') {
         // Update status of driving to started.
         await Tasks.findByIdAndUpdate(drive._id, {
           status: status === 'driving' ? 'started' : 'completed',
         });
+      }
     }
 
-    //TODO: If user is starting service or driving for service send message to customer.
-    //TODO: If status is "driving" send message "technician is arriving" else send message "task started".
+    //* If user is starting service or driving for service send message to customer.
+    //* If status is "driving" send message "technician is arriving" else send message "task started".
+    //* SEND MESSAGE HERE IF INCOMING STATUS IS DRIVING / STARTED
+
+    if (['driving', 'started'].includes(status)) {
+      const {
+        technician: { first_name: technicianFirstName, last_name: technicianLastName },
+        aquarium: {
+          tank_details: { size },
+          client: { phone_number: phoneNumber, first_name: firstName, last_name: lastName },
+        },
+      } = task;
+
+      // driving: Hi! {CLIENT's NAME}, {TECHNICIAN's NAME} is on his way to service your {TANK size}.
+      // started: Hi! {CLIENT's NAME}, {TECHNICIAN's NAME} has started servicing the {TANK size}.
+
+      const MESSAGE = {
+        driving: `Hi! ${firstName} ${lastName}, ${technicianFirstName} ${technicianLastName} is on his way to service your ${size.toLowerCase()}.`,
+        started: `Hi! ${firstName} ${lastName}, ${technicianFirstName} ${technicianLastName} has started servicing the ${size.toLowerCase()}.`,
+      }[status];
+
+      if (phoneNumber) {
+        sendMessage(phoneNumber, MESSAGE).then((r) => {
+          // eslint-disable-next-line no-console
+          console.log('📢 [tasks.js:521]', r);
+        });
+      }
+    }
 
     task.status = status;
     if (status === 'started') {
@@ -503,11 +570,41 @@ exports.getServicesInDateRange = async (req, res) => {
     to = moment(to, DATE_FORMAT, true);
     let services = await Tasks.find({
       type: 'service',
+      status: 'completed',
       technician: user._id,
       date: {
         $gte: from,
         $lte: to,
       },
+    }).populate([
+      { path: 'technician', select: '-otp -fcmToken' },
+      {
+        path: 'aquarium',
+        populate: {
+          path: 'client',
+        },
+      },
+      {
+        path: 'products.product',
+        select: 'name',
+      },
+    ]);
+    res.json({ success: true, results: services });
+  } catch (err) {
+    // Error handling
+    // eslint-disable-next-line no-console
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+exports.getHistoryServices = async (req, res) => {
+  try {
+    let user = req.user;
+    let services = await Tasks.find({
+      type: 'service',
+      status: 'completed',
+      admin: user._id,
     }).populate([
       { path: 'technician', select: '-otp -fcmToken' },
       {
