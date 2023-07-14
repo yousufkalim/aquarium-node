@@ -570,11 +570,41 @@ exports.getServicesInDateRange = async (req, res) => {
     to = moment(to, DATE_FORMAT, true);
     let services = await Tasks.find({
       type: 'service',
+      status: 'completed',
       technician: user._id,
       date: {
         $gte: from,
         $lte: to,
       },
+    }).populate([
+      { path: 'technician', select: '-otp -fcmToken' },
+      {
+        path: 'aquarium',
+        populate: {
+          path: 'client',
+        },
+      },
+      {
+        path: 'products.product',
+        select: 'name',
+      },
+    ]);
+    res.json({ success: true, results: services });
+  } catch (err) {
+    // Error handling
+    // eslint-disable-next-line no-console
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+exports.getHistoryServices = async (req, res) => {
+  try {
+    let user = req.user;
+    let services = await Tasks.find({
+      type: 'service',
+      status: 'completed',
+      admin: user._id,
     }).populate([
       { path: 'technician', select: '-otp -fcmToken' },
       {
